@@ -30,7 +30,7 @@ wasm-bindgen = "0.2.92"
 stream-cancel = "0.8.2"
 cainome = { git = "https://github.com/cartridge-gg/cainome", tag = "v0.3.2" }
 lazy_static = "1.5.0"
-account_sdk = { git = "https://github.com/cartridge-gg/controller", rev = "05fe96f4" }
+account_sdk = { git = "https://github.com/dannroda/controller", rev = "13c134c" }
 
 serde-wasm-bindgen = "0.6.3"
 wasm-bindgen-futures = "0.4.39"
