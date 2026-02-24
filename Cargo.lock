@@ -1190,6 +1190,7 @@ dependencies = [
  "uniffi_bindgen",
  "url",
  "urlencoding",
+ "uuid",
  "walkdir",
  "which",
 ]

@@ -13,7 +13,17 @@ use super::types::*;
 static RUNTIME: OnceLock<Runtime> = OnceLock::new();
 
 fn runtime() -> &'static Runtime {
-    RUNTIME.get_or_init(|| Runtime::new().expect("Failed to create tokio runtime"))
+    RUNTIME.get_or_init(|| {
+        #[cfg(not(target_arch = "wasm32"))]
+        let rt = Runtime::new();
+
+        #[cfg(target_arch = "wasm32")]
+        let rt = tokio::runtime::Builder::new_current_thread()
+            .enable_time()
+            .build();
+
+        rt.expect("Failed to create tokio runtime")
+    })
 }
 
 // Callback traits for subscriptions
