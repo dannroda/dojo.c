@@ -101,3 +101,4 @@ tower-http = { version = "0.6.2", features = ["cors"] }
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 tokio = { version = "1.39.2", default-features = false, features = ["sync", "macros", "rt", "time"]}
 uuid = { version = "0.8.2", features = ["stdweb","wasm-bindgen","v4"] }
+chrono = { workspace = true, features = ["wasmbind"] }

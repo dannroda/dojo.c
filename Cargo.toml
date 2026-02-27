@@ -70,3 +70,4 @@ dojo-uniffi = { path = "crates/uniffi" }
 [patch.crates-io]
 crunchy = { git = "https://github.com/nmathewson/crunchy", branch = "cross-compilation-fix" }
 starknet-crypto = { git = "https://github.com/glihm/starknet-rs", rev = "c1e7e19f45f9fad6ea2796da9b7b3dcf8f9f2b82" }
+uniffi_core = { git = "https://github.com/dannroda/uniffi-rs", rev = "3ac537537ee0f439fca1294207d159bef2973c0d" }

@@ -17,7 +17,7 @@ torii-client.workspace = true
 starknet.workspace = true
 starknet-crypto.workspace = true
 
-tokio.workspace = true
+#tokio.workspace = true
 url.workspace = true
 anyhow.workspace = true
 serde.workspace = true
@@ -32,3 +32,10 @@ chrono.workspace = true
 
 [build-dependencies]
 cbindgen = { git = "https://github.com/Larkooo/cbindgen", branch = "no-c-forward-enum" }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+tokio = { version = "1.39.2", default-features = false, features = ["rt", "rt-multi-thread", "macros"] }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+tokio = { version = "1.39.2", default-features = false, features = ["sync", "macros", "rt", "time"]}
+uuid = { version = "0.8.2", features = ["stdweb","wasm-bindgen","v4"] }
