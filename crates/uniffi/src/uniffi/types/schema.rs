@@ -2,6 +2,8 @@
 use super::core::*;
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(target_arch = "wasm32", serde(tag = "type", content = "value"))]
 pub enum Primitive {
     I8 { value: i8 },
     I16 { value: i16 },
@@ -112,6 +114,8 @@ impl From<dojo_types::primitive::Primitive> for Primitive {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(target_arch = "wasm32", serde(tag = "type", content = "value"))]
 pub enum MemberValue {
     Primitive { value: Primitive },
     String { value: String },
@@ -145,12 +149,15 @@ impl From<torii_proto::MemberValue> for MemberValue {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct FixedSizeArray {
     pub array: Vec<Ty>,
     pub size: u32,
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(target_arch = "wasm32", serde(tag = "type", content = "value"))]
 pub enum Ty {
     Primitive { value: Primitive },
     Struct { value: Struct },
@@ -207,6 +214,7 @@ impl From<Ty> for dojo_types::schema::Ty {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct Member {
     pub name: String,
     pub ty: Ty,
@@ -226,6 +234,7 @@ impl From<Member> for dojo_types::schema::Member {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct Struct {
     pub name: String,
     pub children: Vec<Member>,
@@ -250,6 +259,7 @@ impl From<dojo_types::schema::Struct> for Struct {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct EnumOption {
     pub name: String,
     pub ty: Ty,
@@ -268,6 +278,7 @@ impl From<EnumOption> for dojo_types::schema::EnumOption {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct EnumType {
     pub name: String,
     pub option: u8,
@@ -295,6 +306,8 @@ impl From<EnumType> for dojo_types::schema::Enum {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(target_arch = "wasm32", serde(tag = "type", content = "value"))]
 pub enum ValueType {
     String { value: String },
     Int { value: i64 },
@@ -328,6 +341,7 @@ impl From<torii_proto::ValueType> for ValueType {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct Value {
     pub primitive_type: Primitive,
     pub value_type: ValueType,

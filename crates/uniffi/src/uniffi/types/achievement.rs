@@ -2,6 +2,7 @@
 use super::core::*;
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct AchievementTask {
     pub task_id: String,
     pub description: String,
@@ -25,6 +26,7 @@ impl From<torii_proto::AchievementTask> for AchievementTask {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct Achievement {
     pub id: String,
     pub world_address: FieldElement,
@@ -76,6 +78,7 @@ impl From<torii_proto::Achievement> for Achievement {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct AchievementQuery {
     pub world_addresses: Vec<FieldElement>,
     pub namespaces: Vec<String>,
@@ -99,6 +102,7 @@ impl From<AchievementQuery> for torii_proto::AchievementQuery {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct TaskProgress {
     pub task_id: String,
     pub count: u32,
@@ -112,6 +116,7 @@ impl From<torii_proto::TaskProgress> for TaskProgress {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct PlayerAchievementProgress {
     pub achievement: Achievement,
     pub task_progress: Vec<TaskProgress>,
@@ -134,6 +139,7 @@ impl From<torii_proto::PlayerAchievementProgress> for PlayerAchievementProgress 
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct PlayerAchievementStats {
     pub total_points: u32,
     pub completed_achievements: u32,
@@ -159,6 +165,7 @@ impl From<torii_proto::PlayerAchievementStats> for PlayerAchievementStats {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct PlayerAchievementEntry {
     pub player_address: FieldElement,
     pub stats: PlayerAchievementStats,
@@ -179,6 +186,7 @@ impl From<torii_proto::PlayerAchievementEntry> for PlayerAchievementEntry {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct PlayerAchievementQuery {
     pub world_addresses: Vec<FieldElement>,
     pub namespaces: Vec<String>,
@@ -206,6 +214,7 @@ impl From<PlayerAchievementQuery> for torii_proto::PlayerAchievementQuery {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct AchievementProgression {
     pub id: String,
     pub achievement_id: String,

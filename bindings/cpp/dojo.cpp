@@ -48,6 +48,9 @@ void ensure_initialized() {
     if (uniffi_dojo_uniffi_checksum_method_toriiclient_publish_message_batch() != 2146) {
         throw std::runtime_error("UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
+    if (uniffi_dojo_uniffi_checksum_method_toriiclient_search() != 20622) {
+        throw std::runtime_error("UniFFI API checksum mismatch: try cleaning and rebuilding your project");
+    }
     if (uniffi_dojo_uniffi_checksum_method_toriiclient_sql() != 38286) {
         throw std::runtime_error("UniFFI API checksum mismatch: try cleaning and rebuilding your project");
     }
@@ -520,7 +523,7 @@ uint64_t FfiConverterString::allocation_size(const std::string &val) {
 
 
 
-ToriiClient::ToriiClient(void *ptr): instance(ptr) {}
+ToriiClient::ToriiClient(uint64_t ptr): instance(ptr) {}
 
 ToriiClient::ToriiClient(const ToriiClient &other) : instance(nullptr) {
     if (other.instance) {
@@ -573,7 +576,7 @@ void ToriiClient::cancel_subscription(uint64_t subscription_id) {
         uniffi::FfiConverterDojoError::lift,
         ptr, uniffi::FfiConverterUInt64::lower(subscription_id));
 }
-std::vector<Contract> ToriiClient::contracts(const ContractQuery &query) {
+std::vector<std::shared_ptr<Contract>> ToriiClient::contracts(const ContractQuery &query) {
     auto ptr = this->_uniffi_internal_clone_pointer();
     return uniffi::FfiConverterSequenceTypeContract::lift(uniffi::rust_call(
         uniffi_dojo_uniffi_fn_method_toriiclient_contracts,
@@ -615,14 +618,21 @@ std::string ToriiClient::publish_message(const Message &message) {
         uniffi::FfiConverterDojoError::lift,
         ptr, uniffi::FfiConverterTypeMessage::lower(message)));
 }
-std::vector<std::string> ToriiClient::publish_message_batch(const std::vector<Message> &messages) {
+std::vector<std::string> ToriiClient::publish_message_batch(const std::vector<std::shared_ptr<Message>> &messages) {
     auto ptr = this->_uniffi_internal_clone_pointer();
     return uniffi::FfiConverterSequenceString::lift(uniffi::rust_call(
         uniffi_dojo_uniffi_fn_method_toriiclient_publish_message_batch,
         uniffi::FfiConverterDojoError::lift,
         ptr, uniffi::FfiConverterSequenceTypeMessage::lower(messages)));
 }
-std::vector<SqlRow> ToriiClient::sql(const std::string &query) {
+SearchResponse ToriiClient::search(const SearchQuery &query) {
+    auto ptr = this->_uniffi_internal_clone_pointer();
+    return uniffi::FfiConverterTypeSearchResponse::lift(uniffi::rust_call(
+        uniffi_dojo_uniffi_fn_method_toriiclient_search,
+        uniffi::FfiConverterDojoError::lift,
+        ptr, uniffi::FfiConverterTypeSearchQuery::lower(query)));
+}
+std::vector<std::shared_ptr<SqlRow>> ToriiClient::sql(const std::string &query) {
     auto ptr = this->_uniffi_internal_clone_pointer();
     return uniffi::FfiConverterSequenceTypeSqlRow::lift(uniffi::rust_call(
         uniffi_dojo_uniffi_fn_method_toriiclient_sql,
@@ -643,7 +653,7 @@ uint64_t ToriiClient::subscribe_entity_updates(std::optional<std::shared_ptr<Cla
         uniffi::FfiConverterDojoError::lift,
         ptr, uniffi::FfiConverterOptionalClause::lower(clause), uniffi::FfiConverterSequenceTypeFieldElement::lower(world_addresses), uniffi::FfiConverterEntityUpdateCallback::lower(callback)));
 }
-uint64_t ToriiClient::subscribe_event_updates(const std::vector<KeysClause> &keys, const std::shared_ptr<EventUpdateCallback> &callback) {
+uint64_t ToriiClient::subscribe_event_updates(const std::vector<std::shared_ptr<KeysClause>> &keys, const std::shared_ptr<EventUpdateCallback> &callback) {
     auto ptr = this->_uniffi_internal_clone_pointer();
     return uniffi::FfiConverterUInt64::lift(uniffi::rust_call(
         uniffi_dojo_uniffi_fn_method_toriiclient_subscribe_event_updates,
@@ -861,6 +871,15 @@ void *ToriiClient::_uniffi_internal_clone_pointer() const {
 
 
 
+
+
+
+
+
+
+
+
+
 namespace uniffi {
 
 
@@ -875,7 +894,7 @@ namespace uniffi {
 
 
 
-std::shared_ptr<ToriiClient> FfiConverterToriiClient::lift(void *ptr) {
+std::shared_ptr<ToriiClient> FfiConverterToriiClient::lift(uint64_t ptr) {
     return std::shared_ptr<ToriiClient>(new ToriiClient(ptr));
 }
 
@@ -1078,7 +1097,7 @@ AchievementQuery FfiConverterTypeAchievementQuery::read(RustStream &stream) {
         FfiConverterSequenceTypeFieldElement::read(stream),
         FfiConverterSequenceString::read(stream),
         FfiConverterOptionalBool::read(stream),
-        FfiConverterTypePagination::read(stream)
+        std::make_shared<Pagination>(FfiConverterTypePagination::read(stream))
     };
 }
 
@@ -1086,7 +1105,7 @@ void FfiConverterTypeAchievementQuery::write(RustStream &stream, const Achieveme
     FfiConverterSequenceTypeFieldElement::write(stream, val.world_addresses);
     FfiConverterSequenceString::write(stream, val.namespaces);
     FfiConverterOptionalBool::write(stream, val.hidden);
-    FfiConverterTypePagination::write(stream, val.pagination);
+    FfiConverterTypePagination::write(stream, *val.pagination);
 }
 
 uint64_t FfiConverterTypeAchievementQuery::allocation_size(const AchievementQuery &val) {
@@ -1095,7 +1114,7 @@ uint64_t FfiConverterTypeAchievementQuery::allocation_size(const AchievementQuer
         FfiConverterSequenceTypeFieldElement::allocation_size(val.world_addresses) +
         FfiConverterSequenceString::allocation_size(val.namespaces) +
         FfiConverterOptionalBool::allocation_size(val.hidden) +
-        FfiConverterTypePagination::allocation_size(val.pagination);
+        FfiConverterTypePagination::allocation_size(*val.pagination);
     
 }
 
@@ -1275,7 +1294,7 @@ ActivityQuery FfiConverterTypeActivityQuery::read(RustStream &stream) {
         FfiConverterSequenceTypeFieldElement::read(stream),
         FfiConverterOptionalUInt64::read(stream),
         FfiConverterOptionalUInt64::read(stream),
-        FfiConverterTypePagination::read(stream)
+        std::make_shared<Pagination>(FfiConverterTypePagination::read(stream))
     };
 }
 
@@ -1285,7 +1304,7 @@ void FfiConverterTypeActivityQuery::write(RustStream &stream, const ActivityQuer
     FfiConverterSequenceTypeFieldElement::write(stream, val.caller_addresses);
     FfiConverterOptionalUInt64::write(stream, val.from_time);
     FfiConverterOptionalUInt64::write(stream, val.to_time);
-    FfiConverterTypePagination::write(stream, val.pagination);
+    FfiConverterTypePagination::write(stream, *val.pagination);
 }
 
 uint64_t FfiConverterTypeActivityQuery::allocation_size(const ActivityQuery &val) {
@@ -1296,7 +1315,7 @@ uint64_t FfiConverterTypeActivityQuery::allocation_size(const ActivityQuery &val
         FfiConverterSequenceTypeFieldElement::allocation_size(val.caller_addresses) +
         FfiConverterOptionalUInt64::allocation_size(val.from_time) +
         FfiConverterOptionalUInt64::allocation_size(val.to_time) +
-        FfiConverterTypePagination::allocation_size(val.pagination);
+        FfiConverterTypePagination::allocation_size(*val.pagination);
     
 }
 
@@ -1383,14 +1402,14 @@ AggregationQuery FfiConverterTypeAggregationQuery::read(RustStream &stream) {
     return {
         FfiConverterSequenceString::read(stream),
         FfiConverterSequenceString::read(stream),
-        FfiConverterTypePagination::read(stream)
+        std::make_shared<Pagination>(FfiConverterTypePagination::read(stream))
     };
 }
 
 void FfiConverterTypeAggregationQuery::write(RustStream &stream, const AggregationQuery &val) {
     FfiConverterSequenceString::write(stream, val.aggregator_ids);
     FfiConverterSequenceString::write(stream, val.entity_ids);
-    FfiConverterTypePagination::write(stream, val.pagination);
+    FfiConverterTypePagination::write(stream, *val.pagination);
 }
 
 uint64_t FfiConverterTypeAggregationQuery::allocation_size(const AggregationQuery &val) {
@@ -1398,7 +1417,7 @@ uint64_t FfiConverterTypeAggregationQuery::allocation_size(const AggregationQuer
     return 
         FfiConverterSequenceString::allocation_size(val.aggregator_ids) +
         FfiConverterSequenceString::allocation_size(val.entity_ids) +
-        FfiConverterTypePagination::allocation_size(val.pagination);
+        FfiConverterTypePagination::allocation_size(*val.pagination);
     
 }
 
@@ -1639,14 +1658,14 @@ RustBuffer FfiConverterTypeControllerQuery::lower(const ControllerQuery &val) {
 
 ControllerQuery FfiConverterTypeControllerQuery::read(RustStream &stream) {
     return {
-        FfiConverterTypePagination::read(stream),
+        std::make_shared<Pagination>(FfiConverterTypePagination::read(stream)),
         FfiConverterSequenceTypeFieldElement::read(stream),
         FfiConverterSequenceString::read(stream)
     };
 }
 
 void FfiConverterTypeControllerQuery::write(RustStream &stream, const ControllerQuery &val) {
-    FfiConverterTypePagination::write(stream, val.pagination);
+    FfiConverterTypePagination::write(stream, *val.pagination);
     FfiConverterSequenceTypeFieldElement::write(stream, val.contract_addresses);
     FfiConverterSequenceString::write(stream, val.usernames);
 }
@@ -1654,7 +1673,7 @@ void FfiConverterTypeControllerQuery::write(RustStream &stream, const Controller
 uint64_t FfiConverterTypeControllerQuery::allocation_size(const ControllerQuery &val) {
     
     return 
-        FfiConverterTypePagination::allocation_size(val.pagination) +
+        FfiConverterTypePagination::allocation_size(*val.pagination) +
         FfiConverterSequenceTypeFieldElement::allocation_size(val.contract_addresses) +
         FfiConverterSequenceString::allocation_size(val.usernames);
     
@@ -1856,20 +1875,20 @@ RustBuffer FfiConverterTypeEventQuery::lower(const EventQuery &val) {
 EventQuery FfiConverterTypeEventQuery::read(RustStream &stream) {
     return {
         FfiConverterOptionalTypeKeysClause::read(stream),
-        FfiConverterTypePagination::read(stream)
+        std::make_shared<Pagination>(FfiConverterTypePagination::read(stream))
     };
 }
 
 void FfiConverterTypeEventQuery::write(RustStream &stream, const EventQuery &val) {
     FfiConverterOptionalTypeKeysClause::write(stream, val.keys);
-    FfiConverterTypePagination::write(stream, val.pagination);
+    FfiConverterTypePagination::write(stream, *val.pagination);
 }
 
 uint64_t FfiConverterTypeEventQuery::allocation_size(const EventQuery &val) {
     
     return 
         FfiConverterOptionalTypeKeysClause::allocation_size(val.keys) +
-        FfiConverterTypePagination::allocation_size(val.pagination);
+        FfiConverterTypePagination::allocation_size(*val.pagination);
     
 }
 
@@ -2723,14 +2742,14 @@ RustBuffer FfiConverterTypePlayerAchievementEntry::lower(const PlayerAchievement
 PlayerAchievementEntry FfiConverterTypePlayerAchievementEntry::read(RustStream &stream) {
     return {
         FfiConverterTypeFieldElement::read(stream),
-        FfiConverterTypePlayerAchievementStats::read(stream),
+        std::make_shared<PlayerAchievementStats>(FfiConverterTypePlayerAchievementStats::read(stream)),
         FfiConverterSequenceTypePlayerAchievementProgress::read(stream)
     };
 }
 
 void FfiConverterTypePlayerAchievementEntry::write(RustStream &stream, const PlayerAchievementEntry &val) {
     FfiConverterTypeFieldElement::write(stream, val.player_address);
-    FfiConverterTypePlayerAchievementStats::write(stream, val.stats);
+    FfiConverterTypePlayerAchievementStats::write(stream, *val.stats);
     FfiConverterSequenceTypePlayerAchievementProgress::write(stream, val.achievements);
 }
 
@@ -2738,7 +2757,7 @@ uint64_t FfiConverterTypePlayerAchievementEntry::allocation_size(const PlayerAch
     
     return 
         FfiConverterTypeFieldElement::allocation_size(val.player_address) +
-        FfiConverterTypePlayerAchievementStats::allocation_size(val.stats) +
+        FfiConverterTypePlayerAchievementStats::allocation_size(*val.stats) +
         FfiConverterSequenceTypePlayerAchievementProgress::allocation_size(val.achievements);
     
 }
@@ -2764,7 +2783,7 @@ RustBuffer FfiConverterTypePlayerAchievementProgress::lower(const PlayerAchievem
 
 PlayerAchievementProgress FfiConverterTypePlayerAchievementProgress::read(RustStream &stream) {
     return {
-        FfiConverterTypeAchievement::read(stream),
+        std::make_shared<Achievement>(FfiConverterTypeAchievement::read(stream)),
         FfiConverterSequenceTypeTaskProgress::read(stream),
         FfiConverterBool::read(stream),
         FfiConverterDouble::read(stream)
@@ -2772,7 +2791,7 @@ PlayerAchievementProgress FfiConverterTypePlayerAchievementProgress::read(RustSt
 }
 
 void FfiConverterTypePlayerAchievementProgress::write(RustStream &stream, const PlayerAchievementProgress &val) {
-    FfiConverterTypeAchievement::write(stream, val.achievement);
+    FfiConverterTypeAchievement::write(stream, *val.achievement);
     FfiConverterSequenceTypeTaskProgress::write(stream, val.task_progress);
     FfiConverterBool::write(stream, val.completed);
     FfiConverterDouble::write(stream, val.progress_percentage);
@@ -2781,7 +2800,7 @@ void FfiConverterTypePlayerAchievementProgress::write(RustStream &stream, const 
 uint64_t FfiConverterTypePlayerAchievementProgress::allocation_size(const PlayerAchievementProgress &val) {
     
     return 
-        FfiConverterTypeAchievement::allocation_size(val.achievement) +
+        FfiConverterTypeAchievement::allocation_size(*val.achievement) +
         FfiConverterSequenceTypeTaskProgress::allocation_size(val.task_progress) +
         FfiConverterBool::allocation_size(val.completed) +
         FfiConverterDouble::allocation_size(val.progress_percentage);
@@ -2812,7 +2831,7 @@ PlayerAchievementQuery FfiConverterTypePlayerAchievementQuery::read(RustStream &
         FfiConverterSequenceTypeFieldElement::read(stream),
         FfiConverterSequenceString::read(stream),
         FfiConverterSequenceTypeFieldElement::read(stream),
-        FfiConverterTypePagination::read(stream)
+        std::make_shared<Pagination>(FfiConverterTypePagination::read(stream))
     };
 }
 
@@ -2820,7 +2839,7 @@ void FfiConverterTypePlayerAchievementQuery::write(RustStream &stream, const Pla
     FfiConverterSequenceTypeFieldElement::write(stream, val.world_addresses);
     FfiConverterSequenceString::write(stream, val.namespaces);
     FfiConverterSequenceTypeFieldElement::write(stream, val.player_addresses);
-    FfiConverterTypePagination::write(stream, val.pagination);
+    FfiConverterTypePagination::write(stream, *val.pagination);
 }
 
 uint64_t FfiConverterTypePlayerAchievementQuery::allocation_size(const PlayerAchievementQuery &val) {
@@ -2829,7 +2848,7 @@ uint64_t FfiConverterTypePlayerAchievementQuery::allocation_size(const PlayerAch
         FfiConverterSequenceTypeFieldElement::allocation_size(val.world_addresses) +
         FfiConverterSequenceString::allocation_size(val.namespaces) +
         FfiConverterSequenceTypeFieldElement::allocation_size(val.player_addresses) +
-        FfiConverterTypePagination::allocation_size(val.pagination);
+        FfiConverterTypePagination::allocation_size(*val.pagination);
     
 }
 
@@ -2909,7 +2928,7 @@ RustBuffer FfiConverterTypeQuery::lower(const Query &val) {
 Query FfiConverterTypeQuery::read(RustStream &stream) {
     return {
         FfiConverterSequenceTypeFieldElement::read(stream),
-        FfiConverterTypePagination::read(stream),
+        std::make_shared<Pagination>(FfiConverterTypePagination::read(stream)),
         FfiConverterOptionalClause::read(stream),
         FfiConverterBool::read(stream),
         FfiConverterSequenceString::read(stream),
@@ -2919,7 +2938,7 @@ Query FfiConverterTypeQuery::read(RustStream &stream) {
 
 void FfiConverterTypeQuery::write(RustStream &stream, const Query &val) {
     FfiConverterSequenceTypeFieldElement::write(stream, val.world_addresses);
-    FfiConverterTypePagination::write(stream, val.pagination);
+    FfiConverterTypePagination::write(stream, *val.pagination);
     FfiConverterOptionalClause::write(stream, val.clause);
     FfiConverterBool::write(stream, val.no_hashed_keys);
     FfiConverterSequenceString::write(stream, val.models);
@@ -2930,11 +2949,170 @@ uint64_t FfiConverterTypeQuery::allocation_size(const Query &val) {
     
     return 
         FfiConverterSequenceTypeFieldElement::allocation_size(val.world_addresses) +
-        FfiConverterTypePagination::allocation_size(val.pagination) +
+        FfiConverterTypePagination::allocation_size(*val.pagination) +
         FfiConverterOptionalClause::allocation_size(val.clause) +
         FfiConverterBool::allocation_size(val.no_hashed_keys) +
         FfiConverterSequenceString::allocation_size(val.models) +
         FfiConverterBool::allocation_size(val.historical);
+    
+}
+
+
+SearchField FfiConverterTypeSearchField::lift(RustBuffer buf) {
+    auto stream = RustStream(&buf);
+    auto ret = FfiConverterTypeSearchField::read(stream);
+
+    rustbuffer_free(buf);
+
+    return std::move(ret);
+}
+
+RustBuffer FfiConverterTypeSearchField::lower(const SearchField &val) {
+    auto buf = rustbuffer_alloc(allocation_size(val));
+    auto stream = RustStream(&buf);
+
+    FfiConverterTypeSearchField::write(stream, val);
+
+    return std::move(buf);
+}
+
+SearchField FfiConverterTypeSearchField::read(RustStream &stream) {
+    return {
+        FfiConverterString::read(stream),
+        FfiConverterString::read(stream)
+    };
+}
+
+void FfiConverterTypeSearchField::write(RustStream &stream, const SearchField &val) {
+    FfiConverterString::write(stream, val.key);
+    FfiConverterString::write(stream, val.value);
+}
+
+uint64_t FfiConverterTypeSearchField::allocation_size(const SearchField &val) {
+    
+    return 
+        FfiConverterString::allocation_size(val.key) +
+        FfiConverterString::allocation_size(val.value);
+    
+}
+
+
+SearchMatch FfiConverterTypeSearchMatch::lift(RustBuffer buf) {
+    auto stream = RustStream(&buf);
+    auto ret = FfiConverterTypeSearchMatch::read(stream);
+
+    rustbuffer_free(buf);
+
+    return std::move(ret);
+}
+
+RustBuffer FfiConverterTypeSearchMatch::lower(const SearchMatch &val) {
+    auto buf = rustbuffer_alloc(allocation_size(val));
+    auto stream = RustStream(&buf);
+
+    FfiConverterTypeSearchMatch::write(stream, val);
+
+    return std::move(buf);
+}
+
+SearchMatch FfiConverterTypeSearchMatch::read(RustStream &stream) {
+    return {
+        FfiConverterString::read(stream),
+        FfiConverterSequenceTypeSearchField::read(stream),
+        FfiConverterOptionalDouble::read(stream)
+    };
+}
+
+void FfiConverterTypeSearchMatch::write(RustStream &stream, const SearchMatch &val) {
+    FfiConverterString::write(stream, val.id);
+    FfiConverterSequenceTypeSearchField::write(stream, val.fields);
+    FfiConverterOptionalDouble::write(stream, val.score);
+}
+
+uint64_t FfiConverterTypeSearchMatch::allocation_size(const SearchMatch &val) {
+    
+    return 
+        FfiConverterString::allocation_size(val.id) +
+        FfiConverterSequenceTypeSearchField::allocation_size(val.fields) +
+        FfiConverterOptionalDouble::allocation_size(val.score);
+    
+}
+
+
+SearchQuery FfiConverterTypeSearchQuery::lift(RustBuffer buf) {
+    auto stream = RustStream(&buf);
+    auto ret = FfiConverterTypeSearchQuery::read(stream);
+
+    rustbuffer_free(buf);
+
+    return std::move(ret);
+}
+
+RustBuffer FfiConverterTypeSearchQuery::lower(const SearchQuery &val) {
+    auto buf = rustbuffer_alloc(allocation_size(val));
+    auto stream = RustStream(&buf);
+
+    FfiConverterTypeSearchQuery::write(stream, val);
+
+    return std::move(buf);
+}
+
+SearchQuery FfiConverterTypeSearchQuery::read(RustStream &stream) {
+    return {
+        FfiConverterString::read(stream),
+        FfiConverterUInt32::read(stream)
+    };
+}
+
+void FfiConverterTypeSearchQuery::write(RustStream &stream, const SearchQuery &val) {
+    FfiConverterString::write(stream, val.query);
+    FfiConverterUInt32::write(stream, val.limit);
+}
+
+uint64_t FfiConverterTypeSearchQuery::allocation_size(const SearchQuery &val) {
+    
+    return 
+        FfiConverterString::allocation_size(val.query) +
+        FfiConverterUInt32::allocation_size(val.limit);
+    
+}
+
+
+SearchResponse FfiConverterTypeSearchResponse::lift(RustBuffer buf) {
+    auto stream = RustStream(&buf);
+    auto ret = FfiConverterTypeSearchResponse::read(stream);
+
+    rustbuffer_free(buf);
+
+    return std::move(ret);
+}
+
+RustBuffer FfiConverterTypeSearchResponse::lower(const SearchResponse &val) {
+    auto buf = rustbuffer_alloc(allocation_size(val));
+    auto stream = RustStream(&buf);
+
+    FfiConverterTypeSearchResponse::write(stream, val);
+
+    return std::move(buf);
+}
+
+SearchResponse FfiConverterTypeSearchResponse::read(RustStream &stream) {
+    return {
+        FfiConverterUInt32::read(stream),
+        FfiConverterSequenceTypeTableSearchResults::read(stream)
+    };
+}
+
+void FfiConverterTypeSearchResponse::write(RustStream &stream, const SearchResponse &val) {
+    FfiConverterUInt32::write(stream, val.total);
+    FfiConverterSequenceTypeTableSearchResults::write(stream, val.results);
+}
+
+uint64_t FfiConverterTypeSearchResponse::allocation_size(const SearchResponse &val) {
+    
+    return 
+        FfiConverterUInt32::allocation_size(val.total) +
+        FfiConverterSequenceTypeTableSearchResults::allocation_size(val.results);
     
 }
 
@@ -2999,20 +3177,20 @@ RustBuffer FfiConverterTypeSqlField::lower(const SqlField &val) {
 SqlField FfiConverterTypeSqlField::read(RustStream &stream) {
     return {
         FfiConverterString::read(stream),
-        FfiConverterSqlValue::read(stream)
+        std::make_shared<SqlValue>(FfiConverterSqlValue::read(stream))
     };
 }
 
 void FfiConverterTypeSqlField::write(RustStream &stream, const SqlField &val) {
     FfiConverterString::write(stream, val.name);
-    FfiConverterSqlValue::write(stream, val.value);
+    FfiConverterSqlValue::write(stream, *val.value);
 }
 
 uint64_t FfiConverterTypeSqlField::allocation_size(const SqlField &val) {
     
     return 
         FfiConverterString::allocation_size(val.name) +
-        FfiConverterSqlValue::allocation_size(val.value);
+        FfiConverterSqlValue::allocation_size(*val.value);
     
 }
 
@@ -3088,6 +3266,48 @@ uint64_t FfiConverterTypeStruct::allocation_size(const Struct &val) {
     return 
         FfiConverterString::allocation_size(val.name) +
         FfiConverterSequenceTypeMember::allocation_size(val.children);
+    
+}
+
+
+TableSearchResults FfiConverterTypeTableSearchResults::lift(RustBuffer buf) {
+    auto stream = RustStream(&buf);
+    auto ret = FfiConverterTypeTableSearchResults::read(stream);
+
+    rustbuffer_free(buf);
+
+    return std::move(ret);
+}
+
+RustBuffer FfiConverterTypeTableSearchResults::lower(const TableSearchResults &val) {
+    auto buf = rustbuffer_alloc(allocation_size(val));
+    auto stream = RustStream(&buf);
+
+    FfiConverterTypeTableSearchResults::write(stream, val);
+
+    return std::move(buf);
+}
+
+TableSearchResults FfiConverterTypeTableSearchResults::read(RustStream &stream) {
+    return {
+        FfiConverterString::read(stream),
+        FfiConverterUInt32::read(stream),
+        FfiConverterSequenceTypeSearchMatch::read(stream)
+    };
+}
+
+void FfiConverterTypeTableSearchResults::write(RustStream &stream, const TableSearchResults &val) {
+    FfiConverterString::write(stream, val.table);
+    FfiConverterUInt32::write(stream, val.count);
+    FfiConverterSequenceTypeSearchMatch::write(stream, val.matches);
+}
+
+uint64_t FfiConverterTypeTableSearchResults::allocation_size(const TableSearchResults &val) {
+    
+    return 
+        FfiConverterString::allocation_size(val.table) +
+        FfiConverterUInt32::allocation_size(val.count) +
+        FfiConverterSequenceTypeSearchMatch::allocation_size(val.matches);
     
 }
 
@@ -3256,7 +3476,7 @@ TokenBalanceQuery FfiConverterTypeTokenBalanceQuery::read(RustStream &stream) {
         FfiConverterSequenceTypeFieldElement::read(stream),
         FfiConverterSequenceTypeFieldElement::read(stream),
         FfiConverterSequenceTypeU256::read(stream),
-        FfiConverterTypePagination::read(stream)
+        std::make_shared<Pagination>(FfiConverterTypePagination::read(stream))
     };
 }
 
@@ -3264,7 +3484,7 @@ void FfiConverterTypeTokenBalanceQuery::write(RustStream &stream, const TokenBal
     FfiConverterSequenceTypeFieldElement::write(stream, val.contract_addresses);
     FfiConverterSequenceTypeFieldElement::write(stream, val.account_addresses);
     FfiConverterSequenceTypeU256::write(stream, val.token_ids);
-    FfiConverterTypePagination::write(stream, val.pagination);
+    FfiConverterTypePagination::write(stream, *val.pagination);
 }
 
 uint64_t FfiConverterTypeTokenBalanceQuery::allocation_size(const TokenBalanceQuery &val) {
@@ -3273,7 +3493,7 @@ uint64_t FfiConverterTypeTokenBalanceQuery::allocation_size(const TokenBalanceQu
         FfiConverterSequenceTypeFieldElement::allocation_size(val.contract_addresses) +
         FfiConverterSequenceTypeFieldElement::allocation_size(val.account_addresses) +
         FfiConverterSequenceTypeU256::allocation_size(val.token_ids) +
-        FfiConverterTypePagination::allocation_size(val.pagination);
+        FfiConverterTypePagination::allocation_size(*val.pagination);
     
 }
 
@@ -3354,14 +3574,14 @@ TokenContractQuery FfiConverterTypeTokenContractQuery::read(RustStream &stream) 
     return {
         FfiConverterSequenceTypeFieldElement::read(stream),
         FfiConverterSequenceContractType::read(stream),
-        FfiConverterTypePagination::read(stream)
+        std::make_shared<Pagination>(FfiConverterTypePagination::read(stream))
     };
 }
 
 void FfiConverterTypeTokenContractQuery::write(RustStream &stream, const TokenContractQuery &val) {
     FfiConverterSequenceTypeFieldElement::write(stream, val.contract_addresses);
     FfiConverterSequenceContractType::write(stream, val.contract_types);
-    FfiConverterTypePagination::write(stream, val.pagination);
+    FfiConverterTypePagination::write(stream, *val.pagination);
 }
 
 uint64_t FfiConverterTypeTokenContractQuery::allocation_size(const TokenContractQuery &val) {
@@ -3369,7 +3589,7 @@ uint64_t FfiConverterTypeTokenContractQuery::allocation_size(const TokenContract
     return 
         FfiConverterSequenceTypeFieldElement::allocation_size(val.contract_addresses) +
         FfiConverterSequenceContractType::allocation_size(val.contract_types) +
-        FfiConverterTypePagination::allocation_size(val.pagination);
+        FfiConverterTypePagination::allocation_size(*val.pagination);
     
 }
 
@@ -3397,7 +3617,7 @@ TokenQuery FfiConverterTypeTokenQuery::read(RustStream &stream) {
         FfiConverterSequenceTypeFieldElement::read(stream),
         FfiConverterSequenceTypeU256::read(stream),
         FfiConverterSequenceTypeAttributeFilter::read(stream),
-        FfiConverterTypePagination::read(stream)
+        std::make_shared<Pagination>(FfiConverterTypePagination::read(stream))
     };
 }
 
@@ -3405,7 +3625,7 @@ void FfiConverterTypeTokenQuery::write(RustStream &stream, const TokenQuery &val
     FfiConverterSequenceTypeFieldElement::write(stream, val.contract_addresses);
     FfiConverterSequenceTypeU256::write(stream, val.token_ids);
     FfiConverterSequenceTypeAttributeFilter::write(stream, val.attribute_filters);
-    FfiConverterTypePagination::write(stream, val.pagination);
+    FfiConverterTypePagination::write(stream, *val.pagination);
 }
 
 uint64_t FfiConverterTypeTokenQuery::allocation_size(const TokenQuery &val) {
@@ -3414,7 +3634,7 @@ uint64_t FfiConverterTypeTokenQuery::allocation_size(const TokenQuery &val) {
         FfiConverterSequenceTypeFieldElement::allocation_size(val.contract_addresses) +
         FfiConverterSequenceTypeU256::allocation_size(val.token_ids) +
         FfiConverterSequenceTypeAttributeFilter::allocation_size(val.attribute_filters) +
-        FfiConverterTypePagination::allocation_size(val.pagination);
+        FfiConverterTypePagination::allocation_size(*val.pagination);
     
 }
 
@@ -3499,7 +3719,7 @@ TokenTransferQuery FfiConverterTypeTokenTransferQuery::read(RustStream &stream) 
         FfiConverterSequenceTypeFieldElement::read(stream),
         FfiConverterSequenceTypeFieldElement::read(stream),
         FfiConverterSequenceTypeU256::read(stream),
-        FfiConverterTypePagination::read(stream)
+        std::make_shared<Pagination>(FfiConverterTypePagination::read(stream))
     };
 }
 
@@ -3507,7 +3727,7 @@ void FfiConverterTypeTokenTransferQuery::write(RustStream &stream, const TokenTr
     FfiConverterSequenceTypeFieldElement::write(stream, val.contract_addresses);
     FfiConverterSequenceTypeFieldElement::write(stream, val.account_addresses);
     FfiConverterSequenceTypeU256::write(stream, val.token_ids);
-    FfiConverterTypePagination::write(stream, val.pagination);
+    FfiConverterTypePagination::write(stream, *val.pagination);
 }
 
 uint64_t FfiConverterTypeTokenTransferQuery::allocation_size(const TokenTransferQuery &val) {
@@ -3516,7 +3736,7 @@ uint64_t FfiConverterTypeTokenTransferQuery::allocation_size(const TokenTransfer
         FfiConverterSequenceTypeFieldElement::allocation_size(val.contract_addresses) +
         FfiConverterSequenceTypeFieldElement::allocation_size(val.account_addresses) +
         FfiConverterSequenceTypeU256::allocation_size(val.token_ids) +
-        FfiConverterTypePagination::allocation_size(val.pagination);
+        FfiConverterTypePagination::allocation_size(*val.pagination);
     
 }
 
@@ -3710,20 +3930,20 @@ RustBuffer FfiConverterTypeTransactionQuery::lower(const TransactionQuery &val) 
 TransactionQuery FfiConverterTypeTransactionQuery::read(RustStream &stream) {
     return {
         FfiConverterOptionalTypeTransactionFilter::read(stream),
-        FfiConverterTypePagination::read(stream)
+        std::make_shared<Pagination>(FfiConverterTypePagination::read(stream))
     };
 }
 
 void FfiConverterTypeTransactionQuery::write(RustStream &stream, const TransactionQuery &val) {
     FfiConverterOptionalTypeTransactionFilter::write(stream, val.filter);
-    FfiConverterTypePagination::write(stream, val.pagination);
+    FfiConverterTypePagination::write(stream, *val.pagination);
 }
 
 uint64_t FfiConverterTypeTransactionQuery::allocation_size(const TransactionQuery &val) {
     
     return 
         FfiConverterOptionalTypeTransactionFilter::allocation_size(val.filter) +
-        FfiConverterTypePagination::allocation_size(val.pagination);
+        FfiConverterTypePagination::allocation_size(*val.pagination);
     
 }
 
@@ -3854,7 +4074,7 @@ Clause FfiConverterClause::read(RustStream &stream) {
         
     case 2:
         return Clause::kKeys {
-            .clause = FfiConverterTypeKeysClause::read(stream),
+            .clause = std::make_shared<KeysClause>(FfiConverterTypeKeysClause::read(stream)),
         };
         
     case 3:
@@ -3883,7 +4103,7 @@ void FfiConverterClause::write(RustStream &stream, const Clause &val) {
             FfiConverterSequenceTypeFieldElement::write(stream, arg.keys);
         }
         else if constexpr (std::is_same_v<T, Clause::kKeys>) {
-            FfiConverterTypeKeysClause::write(stream, arg.clause);
+            FfiConverterTypeKeysClause::write(stream, *arg.clause);
         }
         else if constexpr (std::is_same_v<T, Clause::kMember>) {
             FfiConverterTypeMemberClause::write(stream, *arg.clause);
@@ -3909,7 +4129,7 @@ uint64_t FfiConverterClause::allocation_size(const Clause &val) {
         }
         else if constexpr (std::is_same_v<T, Clause::kKeys>) {
             uint64_t size = 0;
-            size += FfiConverterTypeKeysClause::allocation_size(arg.clause);
+            size += FfiConverterTypeKeysClause::allocation_size(*arg.clause);
             return size;
         }
         else if constexpr (std::is_same_v<T, Clause::kMember>) {
@@ -4299,7 +4519,7 @@ MemberValue FfiConverterMemberValue::read(RustStream &stream) {
         
     case 1:
         return MemberValue::kPrimitive {
-            .value = FfiConverterPrimitive::read(stream),
+            .value = std::make_shared<Primitive>(FfiConverterPrimitive::read(stream)),
         };
         
     case 2:
@@ -4325,7 +4545,7 @@ void FfiConverterMemberValue::write(RustStream &stream, const MemberValue &val) 
     std::visit([&](auto &&arg) {
         using T = std::decay_t<decltype(arg)>;
         if constexpr (std::is_same_v<T, MemberValue::kPrimitive>) {
-            FfiConverterPrimitive::write(stream, arg.value);
+            FfiConverterPrimitive::write(stream, *arg.value);
         }
         else if constexpr (std::is_same_v<T, MemberValue::kString>) {
             FfiConverterString::write(stream, arg.value);
@@ -4346,7 +4566,7 @@ uint64_t FfiConverterMemberValue::allocation_size(const MemberValue &val) {
         using T = std::decay_t<decltype(arg)>;
         if constexpr (std::is_same_v<T, MemberValue::kPrimitive>) {
             uint64_t size = 0;
-            size += FfiConverterPrimitive::allocation_size(arg.value);
+            size += FfiConverterPrimitive::allocation_size(*arg.value);
             return size;
         }
         else if constexpr (std::is_same_v<T, MemberValue::kString>) {
@@ -4944,7 +5164,7 @@ Ty FfiConverterTy::read(RustStream &stream) {
         
     case 1:
         return Ty::kPrimitive {
-            .value = FfiConverterPrimitive::read(stream),
+            .value = std::make_shared<Primitive>(FfiConverterPrimitive::read(stream)),
         };
         
     case 2:
@@ -4990,7 +5210,7 @@ void FfiConverterTy::write(RustStream &stream, const Ty &val) {
     std::visit([&](auto &&arg) {
         using T = std::decay_t<decltype(arg)>;
         if constexpr (std::is_same_v<T, Ty::kPrimitive>) {
-            FfiConverterPrimitive::write(stream, arg.value);
+            FfiConverterPrimitive::write(stream, *arg.value);
         }
         else if constexpr (std::is_same_v<T, Ty::kStruct>) {
             FfiConverterTypeStruct::write(stream, *arg.value);
@@ -5023,7 +5243,7 @@ uint64_t FfiConverterTy::allocation_size(const Ty &val) {
         using T = std::decay_t<decltype(arg)>;
         if constexpr (std::is_same_v<T, Ty::kPrimitive>) {
             uint64_t size = 0;
-            size += FfiConverterPrimitive::allocation_size(arg.value);
+            size += FfiConverterPrimitive::allocation_size(*arg.value);
             return size;
         }
         else if constexpr (std::is_same_v<T, Ty::kStruct>) {
@@ -5609,6 +5829,53 @@ uint64_t FfiConverterOptionalUInt64::allocation_size(const std::optional<uint64_
     return ret;
 }
 
+std::optional<double> FfiConverterOptionalDouble::lift(RustBuffer buf) {
+    auto stream = RustStream(&buf);
+    auto ret = FfiConverterOptionalDouble::read(stream);
+
+    rustbuffer_free(buf);
+
+    return ret;
+}
+
+RustBuffer FfiConverterOptionalDouble::lower(const std::optional<double>& val) {
+    auto buf = rustbuffer_alloc(FfiConverterOptionalDouble::allocation_size(val));
+    auto stream = RustStream(&buf);
+
+    FfiConverterOptionalDouble::write(stream, val);
+
+    return buf;
+}
+
+std::optional<double> FfiConverterOptionalDouble::read(RustStream &stream) {
+    char has_value;
+
+    stream.get(has_value);
+    if (has_value) {
+        return std::make_optional(FfiConverterDouble::read(stream));
+    } else {
+        return std::nullopt;
+    }
+}
+
+void FfiConverterOptionalDouble::write(RustStream &stream, const std::optional<double>& value) {
+    stream.put(static_cast<uint8_t>(!!value));
+
+    if (value) {
+        FfiConverterDouble::write(stream, value.value());
+    }
+}
+
+uint64_t FfiConverterOptionalDouble::allocation_size(const std::optional<double> &val) {
+    uint64_t ret = 1;
+
+    if (val) {
+        ret += FfiConverterDouble::allocation_size(val.value());
+    }
+
+    return ret;
+}
+
 std::optional<bool> FfiConverterOptionalBool::lift(RustBuffer buf) {
     auto stream = RustStream(&buf);
     auto ret = FfiConverterOptionalBool::read(stream);
@@ -5726,7 +5993,7 @@ std::optional<std::shared_ptr<KeysClause>> FfiConverterOptionalTypeKeysClause::r
 
     stream.get(has_value);
     if (has_value) {
-        return std::make_optional(FfiConverterTypeKeysClause::read(stream));
+        return std::make_optional(std::make_shared<KeysClause>(FfiConverterTypeKeysClause::read(stream)));
     } else {
         return std::nullopt;
     }
@@ -5736,7 +6003,7 @@ void FfiConverterOptionalTypeKeysClause::write(RustStream &stream, const std::op
     stream.put(static_cast<uint8_t>(!!value));
 
     if (value) {
-        FfiConverterTypeKeysClause::write(stream, value.value());
+        FfiConverterTypeKeysClause::write(stream, *value.value());
     }
 }
 
@@ -5744,7 +6011,7 @@ uint64_t FfiConverterOptionalTypeKeysClause::allocation_size(const std::optional
     uint64_t ret = 1;
 
     if (val) {
-        ret += FfiConverterTypeKeysClause::allocation_size(val.value());
+        ret += FfiConverterTypeKeysClause::allocation_size(*val.value());
     }
 
     return ret;
@@ -5773,7 +6040,7 @@ std::optional<std::shared_ptr<TransactionFilter>> FfiConverterOptionalTypeTransa
 
     stream.get(has_value);
     if (has_value) {
-        return std::make_optional(FfiConverterTypeTransactionFilter::read(stream));
+        return std::make_optional(std::make_shared<TransactionFilter>(FfiConverterTypeTransactionFilter::read(stream)));
     } else {
         return std::nullopt;
     }
@@ -5783,7 +6050,7 @@ void FfiConverterOptionalTypeTransactionFilter::write(RustStream &stream, const 
     stream.put(static_cast<uint8_t>(!!value));
 
     if (value) {
-        FfiConverterTypeTransactionFilter::write(stream, value.value());
+        FfiConverterTypeTransactionFilter::write(stream, *value.value());
     }
 }
 
@@ -5791,7 +6058,7 @@ uint64_t FfiConverterOptionalTypeTransactionFilter::allocation_size(const std::o
     uint64_t ret = 1;
 
     if (val) {
-        ret += FfiConverterTypeTransactionFilter::allocation_size(val.value());
+        ret += FfiConverterTypeTransactionFilter::allocation_size(*val.value());
     }
 
     return ret;
@@ -6041,7 +6308,7 @@ uint64_t FfiConverterSequenceString::allocation_size(const std::vector<std::stri
 }
 
 
-std::vector<Achievement> FfiConverterSequenceTypeAchievement::lift(RustBuffer buf) {
+std::vector<std::shared_ptr<Achievement>> FfiConverterSequenceTypeAchievement::lift(RustBuffer buf) {
     auto stream = RustStream(&buf);
     auto ret = read(stream);
 
@@ -6050,7 +6317,7 @@ std::vector<Achievement> FfiConverterSequenceTypeAchievement::lift(RustBuffer bu
     return ret;
 }
 
-RustBuffer FfiConverterSequenceTypeAchievement::lower(const std::vector<Achievement> &val) {
+RustBuffer FfiConverterSequenceTypeAchievement::lower(const std::vector<std::shared_ptr<Achievement>> &val) {
     auto buf = rustbuffer_alloc(allocation_size(val));
     auto stream = RustStream(&buf);
 
@@ -6059,40 +6326,40 @@ RustBuffer FfiConverterSequenceTypeAchievement::lower(const std::vector<Achievem
     return buf;
 }
 
-std::vector<Achievement> FfiConverterSequenceTypeAchievement::read(RustStream &stream) {
-    std::vector<Achievement> ret;
+std::vector<std::shared_ptr<Achievement>> FfiConverterSequenceTypeAchievement::read(RustStream &stream) {
+    std::vector<std::shared_ptr<Achievement>> ret;
     int32_t count;
     stream >> count;
 
     ret.reserve(count);
 
     for (decltype(count) i = 0; i < count; i++) {
-        ret.push_back(FfiConverterTypeAchievement::read(stream));
+        ret.push_back(std::make_shared<Achievement>(FfiConverterTypeAchievement::read(stream)));
     }
 
     return ret;
 }
 
-void FfiConverterSequenceTypeAchievement::write(RustStream &stream, const std::vector<Achievement> &val) {
+void FfiConverterSequenceTypeAchievement::write(RustStream &stream, const std::vector<std::shared_ptr<Achievement>> &val) {
     stream << static_cast<int32_t>(val.size());
 
     for (auto &elem : val) {
-        FfiConverterTypeAchievement::write(stream, elem);
+        FfiConverterTypeAchievement::write(stream, *elem);
     }
 }
 
-uint64_t FfiConverterSequenceTypeAchievement::allocation_size(const std::vector<Achievement> &val) {
+uint64_t FfiConverterSequenceTypeAchievement::allocation_size(const std::vector<std::shared_ptr<Achievement>> &val) {
     uint64_t size = sizeof(int32_t);
 
     for (auto &elem : val) {
-        size += FfiConverterTypeAchievement::allocation_size(elem);
+        size += FfiConverterTypeAchievement::allocation_size(*elem);
     }
 
     return size;
 }
 
 
-std::vector<AchievementTask> FfiConverterSequenceTypeAchievementTask::lift(RustBuffer buf) {
+std::vector<std::shared_ptr<AchievementTask>> FfiConverterSequenceTypeAchievementTask::lift(RustBuffer buf) {
     auto stream = RustStream(&buf);
     auto ret = read(stream);
 
@@ -6101,7 +6368,7 @@ std::vector<AchievementTask> FfiConverterSequenceTypeAchievementTask::lift(RustB
     return ret;
 }
 
-RustBuffer FfiConverterSequenceTypeAchievementTask::lower(const std::vector<AchievementTask> &val) {
+RustBuffer FfiConverterSequenceTypeAchievementTask::lower(const std::vector<std::shared_ptr<AchievementTask>> &val) {
     auto buf = rustbuffer_alloc(allocation_size(val));
     auto stream = RustStream(&buf);
 
@@ -6110,40 +6377,40 @@ RustBuffer FfiConverterSequenceTypeAchievementTask::lower(const std::vector<Achi
     return buf;
 }
 
-std::vector<AchievementTask> FfiConverterSequenceTypeAchievementTask::read(RustStream &stream) {
-    std::vector<AchievementTask> ret;
+std::vector<std::shared_ptr<AchievementTask>> FfiConverterSequenceTypeAchievementTask::read(RustStream &stream) {
+    std::vector<std::shared_ptr<AchievementTask>> ret;
     int32_t count;
     stream >> count;
 
     ret.reserve(count);
 
     for (decltype(count) i = 0; i < count; i++) {
-        ret.push_back(FfiConverterTypeAchievementTask::read(stream));
+        ret.push_back(std::make_shared<AchievementTask>(FfiConverterTypeAchievementTask::read(stream)));
     }
 
     return ret;
 }
 
-void FfiConverterSequenceTypeAchievementTask::write(RustStream &stream, const std::vector<AchievementTask> &val) {
+void FfiConverterSequenceTypeAchievementTask::write(RustStream &stream, const std::vector<std::shared_ptr<AchievementTask>> &val) {
     stream << static_cast<int32_t>(val.size());
 
     for (auto &elem : val) {
-        FfiConverterTypeAchievementTask::write(stream, elem);
+        FfiConverterTypeAchievementTask::write(stream, *elem);
     }
 }
 
-uint64_t FfiConverterSequenceTypeAchievementTask::allocation_size(const std::vector<AchievementTask> &val) {
+uint64_t FfiConverterSequenceTypeAchievementTask::allocation_size(const std::vector<std::shared_ptr<AchievementTask>> &val) {
     uint64_t size = sizeof(int32_t);
 
     for (auto &elem : val) {
-        size += FfiConverterTypeAchievementTask::allocation_size(elem);
+        size += FfiConverterTypeAchievementTask::allocation_size(*elem);
     }
 
     return size;
 }
 
 
-std::vector<ActionCount> FfiConverterSequenceTypeActionCount::lift(RustBuffer buf) {
+std::vector<std::shared_ptr<ActionCount>> FfiConverterSequenceTypeActionCount::lift(RustBuffer buf) {
     auto stream = RustStream(&buf);
     auto ret = read(stream);
 
@@ -6152,7 +6419,7 @@ std::vector<ActionCount> FfiConverterSequenceTypeActionCount::lift(RustBuffer bu
     return ret;
 }
 
-RustBuffer FfiConverterSequenceTypeActionCount::lower(const std::vector<ActionCount> &val) {
+RustBuffer FfiConverterSequenceTypeActionCount::lower(const std::vector<std::shared_ptr<ActionCount>> &val) {
     auto buf = rustbuffer_alloc(allocation_size(val));
     auto stream = RustStream(&buf);
 
@@ -6161,40 +6428,40 @@ RustBuffer FfiConverterSequenceTypeActionCount::lower(const std::vector<ActionCo
     return buf;
 }
 
-std::vector<ActionCount> FfiConverterSequenceTypeActionCount::read(RustStream &stream) {
-    std::vector<ActionCount> ret;
+std::vector<std::shared_ptr<ActionCount>> FfiConverterSequenceTypeActionCount::read(RustStream &stream) {
+    std::vector<std::shared_ptr<ActionCount>> ret;
     int32_t count;
     stream >> count;
 
     ret.reserve(count);
 
     for (decltype(count) i = 0; i < count; i++) {
-        ret.push_back(FfiConverterTypeActionCount::read(stream));
+        ret.push_back(std::make_shared<ActionCount>(FfiConverterTypeActionCount::read(stream)));
     }
 
     return ret;
 }
 
-void FfiConverterSequenceTypeActionCount::write(RustStream &stream, const std::vector<ActionCount> &val) {
+void FfiConverterSequenceTypeActionCount::write(RustStream &stream, const std::vector<std::shared_ptr<ActionCount>> &val) {
     stream << static_cast<int32_t>(val.size());
 
     for (auto &elem : val) {
-        FfiConverterTypeActionCount::write(stream, elem);
+        FfiConverterTypeActionCount::write(stream, *elem);
     }
 }
 
-uint64_t FfiConverterSequenceTypeActionCount::allocation_size(const std::vector<ActionCount> &val) {
+uint64_t FfiConverterSequenceTypeActionCount::allocation_size(const std::vector<std::shared_ptr<ActionCount>> &val) {
     uint64_t size = sizeof(int32_t);
 
     for (auto &elem : val) {
-        size += FfiConverterTypeActionCount::allocation_size(elem);
+        size += FfiConverterTypeActionCount::allocation_size(*elem);
     }
 
     return size;
 }
 
 
-std::vector<Activity> FfiConverterSequenceTypeActivity::lift(RustBuffer buf) {
+std::vector<std::shared_ptr<Activity>> FfiConverterSequenceTypeActivity::lift(RustBuffer buf) {
     auto stream = RustStream(&buf);
     auto ret = read(stream);
 
@@ -6203,7 +6470,7 @@ std::vector<Activity> FfiConverterSequenceTypeActivity::lift(RustBuffer buf) {
     return ret;
 }
 
-RustBuffer FfiConverterSequenceTypeActivity::lower(const std::vector<Activity> &val) {
+RustBuffer FfiConverterSequenceTypeActivity::lower(const std::vector<std::shared_ptr<Activity>> &val) {
     auto buf = rustbuffer_alloc(allocation_size(val));
     auto stream = RustStream(&buf);
 
@@ -6212,40 +6479,40 @@ RustBuffer FfiConverterSequenceTypeActivity::lower(const std::vector<Activity> &
     return buf;
 }
 
-std::vector<Activity> FfiConverterSequenceTypeActivity::read(RustStream &stream) {
-    std::vector<Activity> ret;
+std::vector<std::shared_ptr<Activity>> FfiConverterSequenceTypeActivity::read(RustStream &stream) {
+    std::vector<std::shared_ptr<Activity>> ret;
     int32_t count;
     stream >> count;
 
     ret.reserve(count);
 
     for (decltype(count) i = 0; i < count; i++) {
-        ret.push_back(FfiConverterTypeActivity::read(stream));
+        ret.push_back(std::make_shared<Activity>(FfiConverterTypeActivity::read(stream)));
     }
 
     return ret;
 }
 
-void FfiConverterSequenceTypeActivity::write(RustStream &stream, const std::vector<Activity> &val) {
+void FfiConverterSequenceTypeActivity::write(RustStream &stream, const std::vector<std::shared_ptr<Activity>> &val) {
     stream << static_cast<int32_t>(val.size());
 
     for (auto &elem : val) {
-        FfiConverterTypeActivity::write(stream, elem);
+        FfiConverterTypeActivity::write(stream, *elem);
     }
 }
 
-uint64_t FfiConverterSequenceTypeActivity::allocation_size(const std::vector<Activity> &val) {
+uint64_t FfiConverterSequenceTypeActivity::allocation_size(const std::vector<std::shared_ptr<Activity>> &val) {
     uint64_t size = sizeof(int32_t);
 
     for (auto &elem : val) {
-        size += FfiConverterTypeActivity::allocation_size(elem);
+        size += FfiConverterTypeActivity::allocation_size(*elem);
     }
 
     return size;
 }
 
 
-std::vector<AggregationEntry> FfiConverterSequenceTypeAggregationEntry::lift(RustBuffer buf) {
+std::vector<std::shared_ptr<AggregationEntry>> FfiConverterSequenceTypeAggregationEntry::lift(RustBuffer buf) {
     auto stream = RustStream(&buf);
     auto ret = read(stream);
 
@@ -6254,7 +6521,7 @@ std::vector<AggregationEntry> FfiConverterSequenceTypeAggregationEntry::lift(Rus
     return ret;
 }
 
-RustBuffer FfiConverterSequenceTypeAggregationEntry::lower(const std::vector<AggregationEntry> &val) {
+RustBuffer FfiConverterSequenceTypeAggregationEntry::lower(const std::vector<std::shared_ptr<AggregationEntry>> &val) {
     auto buf = rustbuffer_alloc(allocation_size(val));
     auto stream = RustStream(&buf);
 
@@ -6263,40 +6530,40 @@ RustBuffer FfiConverterSequenceTypeAggregationEntry::lower(const std::vector<Agg
     return buf;
 }
 
-std::vector<AggregationEntry> FfiConverterSequenceTypeAggregationEntry::read(RustStream &stream) {
-    std::vector<AggregationEntry> ret;
+std::vector<std::shared_ptr<AggregationEntry>> FfiConverterSequenceTypeAggregationEntry::read(RustStream &stream) {
+    std::vector<std::shared_ptr<AggregationEntry>> ret;
     int32_t count;
     stream >> count;
 
     ret.reserve(count);
 
     for (decltype(count) i = 0; i < count; i++) {
-        ret.push_back(FfiConverterTypeAggregationEntry::read(stream));
+        ret.push_back(std::make_shared<AggregationEntry>(FfiConverterTypeAggregationEntry::read(stream)));
     }
 
     return ret;
 }
 
-void FfiConverterSequenceTypeAggregationEntry::write(RustStream &stream, const std::vector<AggregationEntry> &val) {
+void FfiConverterSequenceTypeAggregationEntry::write(RustStream &stream, const std::vector<std::shared_ptr<AggregationEntry>> &val) {
     stream << static_cast<int32_t>(val.size());
 
     for (auto &elem : val) {
-        FfiConverterTypeAggregationEntry::write(stream, elem);
+        FfiConverterTypeAggregationEntry::write(stream, *elem);
     }
 }
 
-uint64_t FfiConverterSequenceTypeAggregationEntry::allocation_size(const std::vector<AggregationEntry> &val) {
+uint64_t FfiConverterSequenceTypeAggregationEntry::allocation_size(const std::vector<std::shared_ptr<AggregationEntry>> &val) {
     uint64_t size = sizeof(int32_t);
 
     for (auto &elem : val) {
-        size += FfiConverterTypeAggregationEntry::allocation_size(elem);
+        size += FfiConverterTypeAggregationEntry::allocation_size(*elem);
     }
 
     return size;
 }
 
 
-std::vector<AttributeFilter> FfiConverterSequenceTypeAttributeFilter::lift(RustBuffer buf) {
+std::vector<std::shared_ptr<AttributeFilter>> FfiConverterSequenceTypeAttributeFilter::lift(RustBuffer buf) {
     auto stream = RustStream(&buf);
     auto ret = read(stream);
 
@@ -6305,7 +6572,7 @@ std::vector<AttributeFilter> FfiConverterSequenceTypeAttributeFilter::lift(RustB
     return ret;
 }
 
-RustBuffer FfiConverterSequenceTypeAttributeFilter::lower(const std::vector<AttributeFilter> &val) {
+RustBuffer FfiConverterSequenceTypeAttributeFilter::lower(const std::vector<std::shared_ptr<AttributeFilter>> &val) {
     auto buf = rustbuffer_alloc(allocation_size(val));
     auto stream = RustStream(&buf);
 
@@ -6314,40 +6581,40 @@ RustBuffer FfiConverterSequenceTypeAttributeFilter::lower(const std::vector<Attr
     return buf;
 }
 
-std::vector<AttributeFilter> FfiConverterSequenceTypeAttributeFilter::read(RustStream &stream) {
-    std::vector<AttributeFilter> ret;
+std::vector<std::shared_ptr<AttributeFilter>> FfiConverterSequenceTypeAttributeFilter::read(RustStream &stream) {
+    std::vector<std::shared_ptr<AttributeFilter>> ret;
     int32_t count;
     stream >> count;
 
     ret.reserve(count);
 
     for (decltype(count) i = 0; i < count; i++) {
-        ret.push_back(FfiConverterTypeAttributeFilter::read(stream));
+        ret.push_back(std::make_shared<AttributeFilter>(FfiConverterTypeAttributeFilter::read(stream)));
     }
 
     return ret;
 }
 
-void FfiConverterSequenceTypeAttributeFilter::write(RustStream &stream, const std::vector<AttributeFilter> &val) {
+void FfiConverterSequenceTypeAttributeFilter::write(RustStream &stream, const std::vector<std::shared_ptr<AttributeFilter>> &val) {
     stream << static_cast<int32_t>(val.size());
 
     for (auto &elem : val) {
-        FfiConverterTypeAttributeFilter::write(stream, elem);
+        FfiConverterTypeAttributeFilter::write(stream, *elem);
     }
 }
 
-uint64_t FfiConverterSequenceTypeAttributeFilter::allocation_size(const std::vector<AttributeFilter> &val) {
+uint64_t FfiConverterSequenceTypeAttributeFilter::allocation_size(const std::vector<std::shared_ptr<AttributeFilter>> &val) {
     uint64_t size = sizeof(int32_t);
 
     for (auto &elem : val) {
-        size += FfiConverterTypeAttributeFilter::allocation_size(elem);
+        size += FfiConverterTypeAttributeFilter::allocation_size(*elem);
     }
 
     return size;
 }
 
 
-std::vector<Contract> FfiConverterSequenceTypeContract::lift(RustBuffer buf) {
+std::vector<std::shared_ptr<Contract>> FfiConverterSequenceTypeContract::lift(RustBuffer buf) {
     auto stream = RustStream(&buf);
     auto ret = read(stream);
 
@@ -6356,7 +6623,7 @@ std::vector<Contract> FfiConverterSequenceTypeContract::lift(RustBuffer buf) {
     return ret;
 }
 
-RustBuffer FfiConverterSequenceTypeContract::lower(const std::vector<Contract> &val) {
+RustBuffer FfiConverterSequenceTypeContract::lower(const std::vector<std::shared_ptr<Contract>> &val) {
     auto buf = rustbuffer_alloc(allocation_size(val));
     auto stream = RustStream(&buf);
 
@@ -6365,40 +6632,40 @@ RustBuffer FfiConverterSequenceTypeContract::lower(const std::vector<Contract> &
     return buf;
 }
 
-std::vector<Contract> FfiConverterSequenceTypeContract::read(RustStream &stream) {
-    std::vector<Contract> ret;
+std::vector<std::shared_ptr<Contract>> FfiConverterSequenceTypeContract::read(RustStream &stream) {
+    std::vector<std::shared_ptr<Contract>> ret;
     int32_t count;
     stream >> count;
 
     ret.reserve(count);
 
     for (decltype(count) i = 0; i < count; i++) {
-        ret.push_back(FfiConverterTypeContract::read(stream));
+        ret.push_back(std::make_shared<Contract>(FfiConverterTypeContract::read(stream)));
     }
 
     return ret;
 }
 
-void FfiConverterSequenceTypeContract::write(RustStream &stream, const std::vector<Contract> &val) {
+void FfiConverterSequenceTypeContract::write(RustStream &stream, const std::vector<std::shared_ptr<Contract>> &val) {
     stream << static_cast<int32_t>(val.size());
 
     for (auto &elem : val) {
-        FfiConverterTypeContract::write(stream, elem);
+        FfiConverterTypeContract::write(stream, *elem);
     }
 }
 
-uint64_t FfiConverterSequenceTypeContract::allocation_size(const std::vector<Contract> &val) {
+uint64_t FfiConverterSequenceTypeContract::allocation_size(const std::vector<std::shared_ptr<Contract>> &val) {
     uint64_t size = sizeof(int32_t);
 
     for (auto &elem : val) {
-        size += FfiConverterTypeContract::allocation_size(elem);
+        size += FfiConverterTypeContract::allocation_size(*elem);
     }
 
     return size;
 }
 
 
-std::vector<Controller> FfiConverterSequenceTypeController::lift(RustBuffer buf) {
+std::vector<std::shared_ptr<Controller>> FfiConverterSequenceTypeController::lift(RustBuffer buf) {
     auto stream = RustStream(&buf);
     auto ret = read(stream);
 
@@ -6407,7 +6674,7 @@ std::vector<Controller> FfiConverterSequenceTypeController::lift(RustBuffer buf)
     return ret;
 }
 
-RustBuffer FfiConverterSequenceTypeController::lower(const std::vector<Controller> &val) {
+RustBuffer FfiConverterSequenceTypeController::lower(const std::vector<std::shared_ptr<Controller>> &val) {
     auto buf = rustbuffer_alloc(allocation_size(val));
     auto stream = RustStream(&buf);
 
@@ -6416,33 +6683,33 @@ RustBuffer FfiConverterSequenceTypeController::lower(const std::vector<Controlle
     return buf;
 }
 
-std::vector<Controller> FfiConverterSequenceTypeController::read(RustStream &stream) {
-    std::vector<Controller> ret;
+std::vector<std::shared_ptr<Controller>> FfiConverterSequenceTypeController::read(RustStream &stream) {
+    std::vector<std::shared_ptr<Controller>> ret;
     int32_t count;
     stream >> count;
 
     ret.reserve(count);
 
     for (decltype(count) i = 0; i < count; i++) {
-        ret.push_back(FfiConverterTypeController::read(stream));
+        ret.push_back(std::make_shared<Controller>(FfiConverterTypeController::read(stream)));
     }
 
     return ret;
 }
 
-void FfiConverterSequenceTypeController::write(RustStream &stream, const std::vector<Controller> &val) {
+void FfiConverterSequenceTypeController::write(RustStream &stream, const std::vector<std::shared_ptr<Controller>> &val) {
     stream << static_cast<int32_t>(val.size());
 
     for (auto &elem : val) {
-        FfiConverterTypeController::write(stream, elem);
+        FfiConverterTypeController::write(stream, *elem);
     }
 }
 
-uint64_t FfiConverterSequenceTypeController::allocation_size(const std::vector<Controller> &val) {
+uint64_t FfiConverterSequenceTypeController::allocation_size(const std::vector<std::shared_ptr<Controller>> &val) {
     uint64_t size = sizeof(int32_t);
 
     for (auto &elem : val) {
-        size += FfiConverterTypeController::allocation_size(elem);
+        size += FfiConverterTypeController::allocation_size(*elem);
     }
 
     return size;
@@ -6551,7 +6818,7 @@ uint64_t FfiConverterSequenceTypeEnumOption::allocation_size(const std::vector<s
 }
 
 
-std::vector<Event> FfiConverterSequenceTypeEvent::lift(RustBuffer buf) {
+std::vector<std::shared_ptr<Event>> FfiConverterSequenceTypeEvent::lift(RustBuffer buf) {
     auto stream = RustStream(&buf);
     auto ret = read(stream);
 
@@ -6560,7 +6827,7 @@ std::vector<Event> FfiConverterSequenceTypeEvent::lift(RustBuffer buf) {
     return ret;
 }
 
-RustBuffer FfiConverterSequenceTypeEvent::lower(const std::vector<Event> &val) {
+RustBuffer FfiConverterSequenceTypeEvent::lower(const std::vector<std::shared_ptr<Event>> &val) {
     auto buf = rustbuffer_alloc(allocation_size(val));
     auto stream = RustStream(&buf);
 
@@ -6569,40 +6836,40 @@ RustBuffer FfiConverterSequenceTypeEvent::lower(const std::vector<Event> &val) {
     return buf;
 }
 
-std::vector<Event> FfiConverterSequenceTypeEvent::read(RustStream &stream) {
-    std::vector<Event> ret;
+std::vector<std::shared_ptr<Event>> FfiConverterSequenceTypeEvent::read(RustStream &stream) {
+    std::vector<std::shared_ptr<Event>> ret;
     int32_t count;
     stream >> count;
 
     ret.reserve(count);
 
     for (decltype(count) i = 0; i < count; i++) {
-        ret.push_back(FfiConverterTypeEvent::read(stream));
+        ret.push_back(std::make_shared<Event>(FfiConverterTypeEvent::read(stream)));
     }
 
     return ret;
 }
 
-void FfiConverterSequenceTypeEvent::write(RustStream &stream, const std::vector<Event> &val) {
+void FfiConverterSequenceTypeEvent::write(RustStream &stream, const std::vector<std::shared_ptr<Event>> &val) {
     stream << static_cast<int32_t>(val.size());
 
     for (auto &elem : val) {
-        FfiConverterTypeEvent::write(stream, elem);
+        FfiConverterTypeEvent::write(stream, *elem);
     }
 }
 
-uint64_t FfiConverterSequenceTypeEvent::allocation_size(const std::vector<Event> &val) {
+uint64_t FfiConverterSequenceTypeEvent::allocation_size(const std::vector<std::shared_ptr<Event>> &val) {
     uint64_t size = sizeof(int32_t);
 
     for (auto &elem : val) {
-        size += FfiConverterTypeEvent::allocation_size(elem);
+        size += FfiConverterTypeEvent::allocation_size(*elem);
     }
 
     return size;
 }
 
 
-std::vector<KeysClause> FfiConverterSequenceTypeKeysClause::lift(RustBuffer buf) {
+std::vector<std::shared_ptr<KeysClause>> FfiConverterSequenceTypeKeysClause::lift(RustBuffer buf) {
     auto stream = RustStream(&buf);
     auto ret = read(stream);
 
@@ -6611,7 +6878,7 @@ std::vector<KeysClause> FfiConverterSequenceTypeKeysClause::lift(RustBuffer buf)
     return ret;
 }
 
-RustBuffer FfiConverterSequenceTypeKeysClause::lower(const std::vector<KeysClause> &val) {
+RustBuffer FfiConverterSequenceTypeKeysClause::lower(const std::vector<std::shared_ptr<KeysClause>> &val) {
     auto buf = rustbuffer_alloc(allocation_size(val));
     auto stream = RustStream(&buf);
 
@@ -6620,33 +6887,33 @@ RustBuffer FfiConverterSequenceTypeKeysClause::lower(const std::vector<KeysClaus
     return buf;
 }
 
-std::vector<KeysClause> FfiConverterSequenceTypeKeysClause::read(RustStream &stream) {
-    std::vector<KeysClause> ret;
+std::vector<std::shared_ptr<KeysClause>> FfiConverterSequenceTypeKeysClause::read(RustStream &stream) {
+    std::vector<std::shared_ptr<KeysClause>> ret;
     int32_t count;
     stream >> count;
 
     ret.reserve(count);
 
     for (decltype(count) i = 0; i < count; i++) {
-        ret.push_back(FfiConverterTypeKeysClause::read(stream));
+        ret.push_back(std::make_shared<KeysClause>(FfiConverterTypeKeysClause::read(stream)));
     }
 
     return ret;
 }
 
-void FfiConverterSequenceTypeKeysClause::write(RustStream &stream, const std::vector<KeysClause> &val) {
+void FfiConverterSequenceTypeKeysClause::write(RustStream &stream, const std::vector<std::shared_ptr<KeysClause>> &val) {
     stream << static_cast<int32_t>(val.size());
 
     for (auto &elem : val) {
-        FfiConverterTypeKeysClause::write(stream, elem);
+        FfiConverterTypeKeysClause::write(stream, *elem);
     }
 }
 
-uint64_t FfiConverterSequenceTypeKeysClause::allocation_size(const std::vector<KeysClause> &val) {
+uint64_t FfiConverterSequenceTypeKeysClause::allocation_size(const std::vector<std::shared_ptr<KeysClause>> &val) {
     uint64_t size = sizeof(int32_t);
 
     for (auto &elem : val) {
-        size += FfiConverterTypeKeysClause::allocation_size(elem);
+        size += FfiConverterTypeKeysClause::allocation_size(*elem);
     }
 
     return size;
@@ -6704,7 +6971,7 @@ uint64_t FfiConverterSequenceTypeMember::allocation_size(const std::vector<std::
 }
 
 
-std::vector<Message> FfiConverterSequenceTypeMessage::lift(RustBuffer buf) {
+std::vector<std::shared_ptr<Message>> FfiConverterSequenceTypeMessage::lift(RustBuffer buf) {
     auto stream = RustStream(&buf);
     auto ret = read(stream);
 
@@ -6713,7 +6980,7 @@ std::vector<Message> FfiConverterSequenceTypeMessage::lift(RustBuffer buf) {
     return ret;
 }
 
-RustBuffer FfiConverterSequenceTypeMessage::lower(const std::vector<Message> &val) {
+RustBuffer FfiConverterSequenceTypeMessage::lower(const std::vector<std::shared_ptr<Message>> &val) {
     auto buf = rustbuffer_alloc(allocation_size(val));
     auto stream = RustStream(&buf);
 
@@ -6722,33 +6989,33 @@ RustBuffer FfiConverterSequenceTypeMessage::lower(const std::vector<Message> &va
     return buf;
 }
 
-std::vector<Message> FfiConverterSequenceTypeMessage::read(RustStream &stream) {
-    std::vector<Message> ret;
+std::vector<std::shared_ptr<Message>> FfiConverterSequenceTypeMessage::read(RustStream &stream) {
+    std::vector<std::shared_ptr<Message>> ret;
     int32_t count;
     stream >> count;
 
     ret.reserve(count);
 
     for (decltype(count) i = 0; i < count; i++) {
-        ret.push_back(FfiConverterTypeMessage::read(stream));
+        ret.push_back(std::make_shared<Message>(FfiConverterTypeMessage::read(stream)));
     }
 
     return ret;
 }
 
-void FfiConverterSequenceTypeMessage::write(RustStream &stream, const std::vector<Message> &val) {
+void FfiConverterSequenceTypeMessage::write(RustStream &stream, const std::vector<std::shared_ptr<Message>> &val) {
     stream << static_cast<int32_t>(val.size());
 
     for (auto &elem : val) {
-        FfiConverterTypeMessage::write(stream, elem);
+        FfiConverterTypeMessage::write(stream, *elem);
     }
 }
 
-uint64_t FfiConverterSequenceTypeMessage::allocation_size(const std::vector<Message> &val) {
+uint64_t FfiConverterSequenceTypeMessage::allocation_size(const std::vector<std::shared_ptr<Message>> &val) {
     uint64_t size = sizeof(int32_t);
 
     for (auto &elem : val) {
-        size += FfiConverterTypeMessage::allocation_size(elem);
+        size += FfiConverterTypeMessage::allocation_size(*elem);
     }
 
     return size;
@@ -6806,7 +7073,7 @@ uint64_t FfiConverterSequenceTypeModel::allocation_size(const std::vector<std::s
 }
 
 
-std::vector<OrderBy> FfiConverterSequenceTypeOrderBy::lift(RustBuffer buf) {
+std::vector<std::shared_ptr<OrderBy>> FfiConverterSequenceTypeOrderBy::lift(RustBuffer buf) {
     auto stream = RustStream(&buf);
     auto ret = read(stream);
 
@@ -6815,7 +7082,7 @@ std::vector<OrderBy> FfiConverterSequenceTypeOrderBy::lift(RustBuffer buf) {
     return ret;
 }
 
-RustBuffer FfiConverterSequenceTypeOrderBy::lower(const std::vector<OrderBy> &val) {
+RustBuffer FfiConverterSequenceTypeOrderBy::lower(const std::vector<std::shared_ptr<OrderBy>> &val) {
     auto buf = rustbuffer_alloc(allocation_size(val));
     auto stream = RustStream(&buf);
 
@@ -6824,40 +7091,40 @@ RustBuffer FfiConverterSequenceTypeOrderBy::lower(const std::vector<OrderBy> &va
     return buf;
 }
 
-std::vector<OrderBy> FfiConverterSequenceTypeOrderBy::read(RustStream &stream) {
-    std::vector<OrderBy> ret;
+std::vector<std::shared_ptr<OrderBy>> FfiConverterSequenceTypeOrderBy::read(RustStream &stream) {
+    std::vector<std::shared_ptr<OrderBy>> ret;
     int32_t count;
     stream >> count;
 
     ret.reserve(count);
 
     for (decltype(count) i = 0; i < count; i++) {
-        ret.push_back(FfiConverterTypeOrderBy::read(stream));
+        ret.push_back(std::make_shared<OrderBy>(FfiConverterTypeOrderBy::read(stream)));
     }
 
     return ret;
 }
 
-void FfiConverterSequenceTypeOrderBy::write(RustStream &stream, const std::vector<OrderBy> &val) {
+void FfiConverterSequenceTypeOrderBy::write(RustStream &stream, const std::vector<std::shared_ptr<OrderBy>> &val) {
     stream << static_cast<int32_t>(val.size());
 
     for (auto &elem : val) {
-        FfiConverterTypeOrderBy::write(stream, elem);
+        FfiConverterTypeOrderBy::write(stream, *elem);
     }
 }
 
-uint64_t FfiConverterSequenceTypeOrderBy::allocation_size(const std::vector<OrderBy> &val) {
+uint64_t FfiConverterSequenceTypeOrderBy::allocation_size(const std::vector<std::shared_ptr<OrderBy>> &val) {
     uint64_t size = sizeof(int32_t);
 
     for (auto &elem : val) {
-        size += FfiConverterTypeOrderBy::allocation_size(elem);
+        size += FfiConverterTypeOrderBy::allocation_size(*elem);
     }
 
     return size;
 }
 
 
-std::vector<PlayerAchievementEntry> FfiConverterSequenceTypePlayerAchievementEntry::lift(RustBuffer buf) {
+std::vector<std::shared_ptr<PlayerAchievementEntry>> FfiConverterSequenceTypePlayerAchievementEntry::lift(RustBuffer buf) {
     auto stream = RustStream(&buf);
     auto ret = read(stream);
 
@@ -6866,7 +7133,7 @@ std::vector<PlayerAchievementEntry> FfiConverterSequenceTypePlayerAchievementEnt
     return ret;
 }
 
-RustBuffer FfiConverterSequenceTypePlayerAchievementEntry::lower(const std::vector<PlayerAchievementEntry> &val) {
+RustBuffer FfiConverterSequenceTypePlayerAchievementEntry::lower(const std::vector<std::shared_ptr<PlayerAchievementEntry>> &val) {
     auto buf = rustbuffer_alloc(allocation_size(val));
     auto stream = RustStream(&buf);
 
@@ -6875,40 +7142,40 @@ RustBuffer FfiConverterSequenceTypePlayerAchievementEntry::lower(const std::vect
     return buf;
 }
 
-std::vector<PlayerAchievementEntry> FfiConverterSequenceTypePlayerAchievementEntry::read(RustStream &stream) {
-    std::vector<PlayerAchievementEntry> ret;
+std::vector<std::shared_ptr<PlayerAchievementEntry>> FfiConverterSequenceTypePlayerAchievementEntry::read(RustStream &stream) {
+    std::vector<std::shared_ptr<PlayerAchievementEntry>> ret;
     int32_t count;
     stream >> count;
 
     ret.reserve(count);
 
     for (decltype(count) i = 0; i < count; i++) {
-        ret.push_back(FfiConverterTypePlayerAchievementEntry::read(stream));
+        ret.push_back(std::make_shared<PlayerAchievementEntry>(FfiConverterTypePlayerAchievementEntry::read(stream)));
     }
 
     return ret;
 }
 
-void FfiConverterSequenceTypePlayerAchievementEntry::write(RustStream &stream, const std::vector<PlayerAchievementEntry> &val) {
+void FfiConverterSequenceTypePlayerAchievementEntry::write(RustStream &stream, const std::vector<std::shared_ptr<PlayerAchievementEntry>> &val) {
     stream << static_cast<int32_t>(val.size());
 
     for (auto &elem : val) {
-        FfiConverterTypePlayerAchievementEntry::write(stream, elem);
+        FfiConverterTypePlayerAchievementEntry::write(stream, *elem);
     }
 }
 
-uint64_t FfiConverterSequenceTypePlayerAchievementEntry::allocation_size(const std::vector<PlayerAchievementEntry> &val) {
+uint64_t FfiConverterSequenceTypePlayerAchievementEntry::allocation_size(const std::vector<std::shared_ptr<PlayerAchievementEntry>> &val) {
     uint64_t size = sizeof(int32_t);
 
     for (auto &elem : val) {
-        size += FfiConverterTypePlayerAchievementEntry::allocation_size(elem);
+        size += FfiConverterTypePlayerAchievementEntry::allocation_size(*elem);
     }
 
     return size;
 }
 
 
-std::vector<PlayerAchievementProgress> FfiConverterSequenceTypePlayerAchievementProgress::lift(RustBuffer buf) {
+std::vector<std::shared_ptr<PlayerAchievementProgress>> FfiConverterSequenceTypePlayerAchievementProgress::lift(RustBuffer buf) {
     auto stream = RustStream(&buf);
     auto ret = read(stream);
 
@@ -6917,7 +7184,7 @@ std::vector<PlayerAchievementProgress> FfiConverterSequenceTypePlayerAchievement
     return ret;
 }
 
-RustBuffer FfiConverterSequenceTypePlayerAchievementProgress::lower(const std::vector<PlayerAchievementProgress> &val) {
+RustBuffer FfiConverterSequenceTypePlayerAchievementProgress::lower(const std::vector<std::shared_ptr<PlayerAchievementProgress>> &val) {
     auto buf = rustbuffer_alloc(allocation_size(val));
     auto stream = RustStream(&buf);
 
@@ -6926,40 +7193,40 @@ RustBuffer FfiConverterSequenceTypePlayerAchievementProgress::lower(const std::v
     return buf;
 }
 
-std::vector<PlayerAchievementProgress> FfiConverterSequenceTypePlayerAchievementProgress::read(RustStream &stream) {
-    std::vector<PlayerAchievementProgress> ret;
+std::vector<std::shared_ptr<PlayerAchievementProgress>> FfiConverterSequenceTypePlayerAchievementProgress::read(RustStream &stream) {
+    std::vector<std::shared_ptr<PlayerAchievementProgress>> ret;
     int32_t count;
     stream >> count;
 
     ret.reserve(count);
 
     for (decltype(count) i = 0; i < count; i++) {
-        ret.push_back(FfiConverterTypePlayerAchievementProgress::read(stream));
+        ret.push_back(std::make_shared<PlayerAchievementProgress>(FfiConverterTypePlayerAchievementProgress::read(stream)));
     }
 
     return ret;
 }
 
-void FfiConverterSequenceTypePlayerAchievementProgress::write(RustStream &stream, const std::vector<PlayerAchievementProgress> &val) {
+void FfiConverterSequenceTypePlayerAchievementProgress::write(RustStream &stream, const std::vector<std::shared_ptr<PlayerAchievementProgress>> &val) {
     stream << static_cast<int32_t>(val.size());
 
     for (auto &elem : val) {
-        FfiConverterTypePlayerAchievementProgress::write(stream, elem);
+        FfiConverterTypePlayerAchievementProgress::write(stream, *elem);
     }
 }
 
-uint64_t FfiConverterSequenceTypePlayerAchievementProgress::allocation_size(const std::vector<PlayerAchievementProgress> &val) {
+uint64_t FfiConverterSequenceTypePlayerAchievementProgress::allocation_size(const std::vector<std::shared_ptr<PlayerAchievementProgress>> &val) {
     uint64_t size = sizeof(int32_t);
 
     for (auto &elem : val) {
-        size += FfiConverterTypePlayerAchievementProgress::allocation_size(elem);
+        size += FfiConverterTypePlayerAchievementProgress::allocation_size(*elem);
     }
 
     return size;
 }
 
 
-std::vector<SqlField> FfiConverterSequenceTypeSqlField::lift(RustBuffer buf) {
+std::vector<std::shared_ptr<SearchField>> FfiConverterSequenceTypeSearchField::lift(RustBuffer buf) {
     auto stream = RustStream(&buf);
     auto ret = read(stream);
 
@@ -6968,7 +7235,7 @@ std::vector<SqlField> FfiConverterSequenceTypeSqlField::lift(RustBuffer buf) {
     return ret;
 }
 
-RustBuffer FfiConverterSequenceTypeSqlField::lower(const std::vector<SqlField> &val) {
+RustBuffer FfiConverterSequenceTypeSearchField::lower(const std::vector<std::shared_ptr<SearchField>> &val) {
     auto buf = rustbuffer_alloc(allocation_size(val));
     auto stream = RustStream(&buf);
 
@@ -6977,40 +7244,40 @@ RustBuffer FfiConverterSequenceTypeSqlField::lower(const std::vector<SqlField> &
     return buf;
 }
 
-std::vector<SqlField> FfiConverterSequenceTypeSqlField::read(RustStream &stream) {
-    std::vector<SqlField> ret;
+std::vector<std::shared_ptr<SearchField>> FfiConverterSequenceTypeSearchField::read(RustStream &stream) {
+    std::vector<std::shared_ptr<SearchField>> ret;
     int32_t count;
     stream >> count;
 
     ret.reserve(count);
 
     for (decltype(count) i = 0; i < count; i++) {
-        ret.push_back(FfiConverterTypeSqlField::read(stream));
+        ret.push_back(std::make_shared<SearchField>(FfiConverterTypeSearchField::read(stream)));
     }
 
     return ret;
 }
 
-void FfiConverterSequenceTypeSqlField::write(RustStream &stream, const std::vector<SqlField> &val) {
+void FfiConverterSequenceTypeSearchField::write(RustStream &stream, const std::vector<std::shared_ptr<SearchField>> &val) {
     stream << static_cast<int32_t>(val.size());
 
     for (auto &elem : val) {
-        FfiConverterTypeSqlField::write(stream, elem);
+        FfiConverterTypeSearchField::write(stream, *elem);
     }
 }
 
-uint64_t FfiConverterSequenceTypeSqlField::allocation_size(const std::vector<SqlField> &val) {
+uint64_t FfiConverterSequenceTypeSearchField::allocation_size(const std::vector<std::shared_ptr<SearchField>> &val) {
     uint64_t size = sizeof(int32_t);
 
     for (auto &elem : val) {
-        size += FfiConverterTypeSqlField::allocation_size(elem);
+        size += FfiConverterTypeSearchField::allocation_size(*elem);
     }
 
     return size;
 }
 
 
-std::vector<SqlRow> FfiConverterSequenceTypeSqlRow::lift(RustBuffer buf) {
+std::vector<std::shared_ptr<SearchMatch>> FfiConverterSequenceTypeSearchMatch::lift(RustBuffer buf) {
     auto stream = RustStream(&buf);
     auto ret = read(stream);
 
@@ -7019,7 +7286,7 @@ std::vector<SqlRow> FfiConverterSequenceTypeSqlRow::lift(RustBuffer buf) {
     return ret;
 }
 
-RustBuffer FfiConverterSequenceTypeSqlRow::lower(const std::vector<SqlRow> &val) {
+RustBuffer FfiConverterSequenceTypeSearchMatch::lower(const std::vector<std::shared_ptr<SearchMatch>> &val) {
     auto buf = rustbuffer_alloc(allocation_size(val));
     auto stream = RustStream(&buf);
 
@@ -7028,33 +7295,135 @@ RustBuffer FfiConverterSequenceTypeSqlRow::lower(const std::vector<SqlRow> &val)
     return buf;
 }
 
-std::vector<SqlRow> FfiConverterSequenceTypeSqlRow::read(RustStream &stream) {
-    std::vector<SqlRow> ret;
+std::vector<std::shared_ptr<SearchMatch>> FfiConverterSequenceTypeSearchMatch::read(RustStream &stream) {
+    std::vector<std::shared_ptr<SearchMatch>> ret;
     int32_t count;
     stream >> count;
 
     ret.reserve(count);
 
     for (decltype(count) i = 0; i < count; i++) {
-        ret.push_back(FfiConverterTypeSqlRow::read(stream));
+        ret.push_back(std::make_shared<SearchMatch>(FfiConverterTypeSearchMatch::read(stream)));
     }
 
     return ret;
 }
 
-void FfiConverterSequenceTypeSqlRow::write(RustStream &stream, const std::vector<SqlRow> &val) {
+void FfiConverterSequenceTypeSearchMatch::write(RustStream &stream, const std::vector<std::shared_ptr<SearchMatch>> &val) {
     stream << static_cast<int32_t>(val.size());
 
     for (auto &elem : val) {
-        FfiConverterTypeSqlRow::write(stream, elem);
+        FfiConverterTypeSearchMatch::write(stream, *elem);
     }
 }
 
-uint64_t FfiConverterSequenceTypeSqlRow::allocation_size(const std::vector<SqlRow> &val) {
+uint64_t FfiConverterSequenceTypeSearchMatch::allocation_size(const std::vector<std::shared_ptr<SearchMatch>> &val) {
     uint64_t size = sizeof(int32_t);
 
     for (auto &elem : val) {
-        size += FfiConverterTypeSqlRow::allocation_size(elem);
+        size += FfiConverterTypeSearchMatch::allocation_size(*elem);
+    }
+
+    return size;
+}
+
+
+std::vector<std::shared_ptr<SqlField>> FfiConverterSequenceTypeSqlField::lift(RustBuffer buf) {
+    auto stream = RustStream(&buf);
+    auto ret = read(stream);
+
+    rustbuffer_free(buf);
+
+    return ret;
+}
+
+RustBuffer FfiConverterSequenceTypeSqlField::lower(const std::vector<std::shared_ptr<SqlField>> &val) {
+    auto buf = rustbuffer_alloc(allocation_size(val));
+    auto stream = RustStream(&buf);
+
+    write(stream, val);
+
+    return buf;
+}
+
+std::vector<std::shared_ptr<SqlField>> FfiConverterSequenceTypeSqlField::read(RustStream &stream) {
+    std::vector<std::shared_ptr<SqlField>> ret;
+    int32_t count;
+    stream >> count;
+
+    ret.reserve(count);
+
+    for (decltype(count) i = 0; i < count; i++) {
+        ret.push_back(std::make_shared<SqlField>(FfiConverterTypeSqlField::read(stream)));
+    }
+
+    return ret;
+}
+
+void FfiConverterSequenceTypeSqlField::write(RustStream &stream, const std::vector<std::shared_ptr<SqlField>> &val) {
+    stream << static_cast<int32_t>(val.size());
+
+    for (auto &elem : val) {
+        FfiConverterTypeSqlField::write(stream, *elem);
+    }
+}
+
+uint64_t FfiConverterSequenceTypeSqlField::allocation_size(const std::vector<std::shared_ptr<SqlField>> &val) {
+    uint64_t size = sizeof(int32_t);
+
+    for (auto &elem : val) {
+        size += FfiConverterTypeSqlField::allocation_size(*elem);
+    }
+
+    return size;
+}
+
+
+std::vector<std::shared_ptr<SqlRow>> FfiConverterSequenceTypeSqlRow::lift(RustBuffer buf) {
+    auto stream = RustStream(&buf);
+    auto ret = read(stream);
+
+    rustbuffer_free(buf);
+
+    return ret;
+}
+
+RustBuffer FfiConverterSequenceTypeSqlRow::lower(const std::vector<std::shared_ptr<SqlRow>> &val) {
+    auto buf = rustbuffer_alloc(allocation_size(val));
+    auto stream = RustStream(&buf);
+
+    write(stream, val);
+
+    return buf;
+}
+
+std::vector<std::shared_ptr<SqlRow>> FfiConverterSequenceTypeSqlRow::read(RustStream &stream) {
+    std::vector<std::shared_ptr<SqlRow>> ret;
+    int32_t count;
+    stream >> count;
+
+    ret.reserve(count);
+
+    for (decltype(count) i = 0; i < count; i++) {
+        ret.push_back(std::make_shared<SqlRow>(FfiConverterTypeSqlRow::read(stream)));
+    }
+
+    return ret;
+}
+
+void FfiConverterSequenceTypeSqlRow::write(RustStream &stream, const std::vector<std::shared_ptr<SqlRow>> &val) {
+    stream << static_cast<int32_t>(val.size());
+
+    for (auto &elem : val) {
+        FfiConverterTypeSqlRow::write(stream, *elem);
+    }
+}
+
+uint64_t FfiConverterSequenceTypeSqlRow::allocation_size(const std::vector<std::shared_ptr<SqlRow>> &val) {
+    uint64_t size = sizeof(int32_t);
+
+    for (auto &elem : val) {
+        size += FfiConverterTypeSqlRow::allocation_size(*elem);
     }
 
     return size;
@@ -7112,7 +7481,7 @@ uint64_t FfiConverterSequenceTypeStruct::allocation_size(const std::vector<std::
 }
 
 
-std::vector<TaskProgress> FfiConverterSequenceTypeTaskProgress::lift(RustBuffer buf) {
+std::vector<std::shared_ptr<TableSearchResults>> FfiConverterSequenceTypeTableSearchResults::lift(RustBuffer buf) {
     auto stream = RustStream(&buf);
     auto ret = read(stream);
 
@@ -7121,7 +7490,7 @@ std::vector<TaskProgress> FfiConverterSequenceTypeTaskProgress::lift(RustBuffer 
     return ret;
 }
 
-RustBuffer FfiConverterSequenceTypeTaskProgress::lower(const std::vector<TaskProgress> &val) {
+RustBuffer FfiConverterSequenceTypeTableSearchResults::lower(const std::vector<std::shared_ptr<TableSearchResults>> &val) {
     auto buf = rustbuffer_alloc(allocation_size(val));
     auto stream = RustStream(&buf);
 
@@ -7130,40 +7499,40 @@ RustBuffer FfiConverterSequenceTypeTaskProgress::lower(const std::vector<TaskPro
     return buf;
 }
 
-std::vector<TaskProgress> FfiConverterSequenceTypeTaskProgress::read(RustStream &stream) {
-    std::vector<TaskProgress> ret;
+std::vector<std::shared_ptr<TableSearchResults>> FfiConverterSequenceTypeTableSearchResults::read(RustStream &stream) {
+    std::vector<std::shared_ptr<TableSearchResults>> ret;
     int32_t count;
     stream >> count;
 
     ret.reserve(count);
 
     for (decltype(count) i = 0; i < count; i++) {
-        ret.push_back(FfiConverterTypeTaskProgress::read(stream));
+        ret.push_back(std::make_shared<TableSearchResults>(FfiConverterTypeTableSearchResults::read(stream)));
     }
 
     return ret;
 }
 
-void FfiConverterSequenceTypeTaskProgress::write(RustStream &stream, const std::vector<TaskProgress> &val) {
+void FfiConverterSequenceTypeTableSearchResults::write(RustStream &stream, const std::vector<std::shared_ptr<TableSearchResults>> &val) {
     stream << static_cast<int32_t>(val.size());
 
     for (auto &elem : val) {
-        FfiConverterTypeTaskProgress::write(stream, elem);
+        FfiConverterTypeTableSearchResults::write(stream, *elem);
     }
 }
 
-uint64_t FfiConverterSequenceTypeTaskProgress::allocation_size(const std::vector<TaskProgress> &val) {
+uint64_t FfiConverterSequenceTypeTableSearchResults::allocation_size(const std::vector<std::shared_ptr<TableSearchResults>> &val) {
     uint64_t size = sizeof(int32_t);
 
     for (auto &elem : val) {
-        size += FfiConverterTypeTaskProgress::allocation_size(elem);
+        size += FfiConverterTypeTableSearchResults::allocation_size(*elem);
     }
 
     return size;
 }
 
 
-std::vector<Token> FfiConverterSequenceTypeToken::lift(RustBuffer buf) {
+std::vector<std::shared_ptr<TaskProgress>> FfiConverterSequenceTypeTaskProgress::lift(RustBuffer buf) {
     auto stream = RustStream(&buf);
     auto ret = read(stream);
 
@@ -7172,7 +7541,7 @@ std::vector<Token> FfiConverterSequenceTypeToken::lift(RustBuffer buf) {
     return ret;
 }
 
-RustBuffer FfiConverterSequenceTypeToken::lower(const std::vector<Token> &val) {
+RustBuffer FfiConverterSequenceTypeTaskProgress::lower(const std::vector<std::shared_ptr<TaskProgress>> &val) {
     auto buf = rustbuffer_alloc(allocation_size(val));
     auto stream = RustStream(&buf);
 
@@ -7181,40 +7550,40 @@ RustBuffer FfiConverterSequenceTypeToken::lower(const std::vector<Token> &val) {
     return buf;
 }
 
-std::vector<Token> FfiConverterSequenceTypeToken::read(RustStream &stream) {
-    std::vector<Token> ret;
+std::vector<std::shared_ptr<TaskProgress>> FfiConverterSequenceTypeTaskProgress::read(RustStream &stream) {
+    std::vector<std::shared_ptr<TaskProgress>> ret;
     int32_t count;
     stream >> count;
 
     ret.reserve(count);
 
     for (decltype(count) i = 0; i < count; i++) {
-        ret.push_back(FfiConverterTypeToken::read(stream));
+        ret.push_back(std::make_shared<TaskProgress>(FfiConverterTypeTaskProgress::read(stream)));
     }
 
     return ret;
 }
 
-void FfiConverterSequenceTypeToken::write(RustStream &stream, const std::vector<Token> &val) {
+void FfiConverterSequenceTypeTaskProgress::write(RustStream &stream, const std::vector<std::shared_ptr<TaskProgress>> &val) {
     stream << static_cast<int32_t>(val.size());
 
     for (auto &elem : val) {
-        FfiConverterTypeToken::write(stream, elem);
+        FfiConverterTypeTaskProgress::write(stream, *elem);
     }
 }
 
-uint64_t FfiConverterSequenceTypeToken::allocation_size(const std::vector<Token> &val) {
+uint64_t FfiConverterSequenceTypeTaskProgress::allocation_size(const std::vector<std::shared_ptr<TaskProgress>> &val) {
     uint64_t size = sizeof(int32_t);
 
     for (auto &elem : val) {
-        size += FfiConverterTypeToken::allocation_size(elem);
+        size += FfiConverterTypeTaskProgress::allocation_size(*elem);
     }
 
     return size;
 }
 
 
-std::vector<TokenBalance> FfiConverterSequenceTypeTokenBalance::lift(RustBuffer buf) {
+std::vector<std::shared_ptr<Token>> FfiConverterSequenceTypeToken::lift(RustBuffer buf) {
     auto stream = RustStream(&buf);
     auto ret = read(stream);
 
@@ -7223,7 +7592,7 @@ std::vector<TokenBalance> FfiConverterSequenceTypeTokenBalance::lift(RustBuffer 
     return ret;
 }
 
-RustBuffer FfiConverterSequenceTypeTokenBalance::lower(const std::vector<TokenBalance> &val) {
+RustBuffer FfiConverterSequenceTypeToken::lower(const std::vector<std::shared_ptr<Token>> &val) {
     auto buf = rustbuffer_alloc(allocation_size(val));
     auto stream = RustStream(&buf);
 
@@ -7232,40 +7601,40 @@ RustBuffer FfiConverterSequenceTypeTokenBalance::lower(const std::vector<TokenBa
     return buf;
 }
 
-std::vector<TokenBalance> FfiConverterSequenceTypeTokenBalance::read(RustStream &stream) {
-    std::vector<TokenBalance> ret;
+std::vector<std::shared_ptr<Token>> FfiConverterSequenceTypeToken::read(RustStream &stream) {
+    std::vector<std::shared_ptr<Token>> ret;
     int32_t count;
     stream >> count;
 
     ret.reserve(count);
 
     for (decltype(count) i = 0; i < count; i++) {
-        ret.push_back(FfiConverterTypeTokenBalance::read(stream));
+        ret.push_back(std::make_shared<Token>(FfiConverterTypeToken::read(stream)));
     }
 
     return ret;
 }
 
-void FfiConverterSequenceTypeTokenBalance::write(RustStream &stream, const std::vector<TokenBalance> &val) {
+void FfiConverterSequenceTypeToken::write(RustStream &stream, const std::vector<std::shared_ptr<Token>> &val) {
     stream << static_cast<int32_t>(val.size());
 
     for (auto &elem : val) {
-        FfiConverterTypeTokenBalance::write(stream, elem);
+        FfiConverterTypeToken::write(stream, *elem);
     }
 }
 
-uint64_t FfiConverterSequenceTypeTokenBalance::allocation_size(const std::vector<TokenBalance> &val) {
+uint64_t FfiConverterSequenceTypeToken::allocation_size(const std::vector<std::shared_ptr<Token>> &val) {
     uint64_t size = sizeof(int32_t);
 
     for (auto &elem : val) {
-        size += FfiConverterTypeTokenBalance::allocation_size(elem);
+        size += FfiConverterTypeToken::allocation_size(*elem);
     }
 
     return size;
 }
 
 
-std::vector<TokenContract> FfiConverterSequenceTypeTokenContract::lift(RustBuffer buf) {
+std::vector<std::shared_ptr<TokenBalance>> FfiConverterSequenceTypeTokenBalance::lift(RustBuffer buf) {
     auto stream = RustStream(&buf);
     auto ret = read(stream);
 
@@ -7274,7 +7643,7 @@ std::vector<TokenContract> FfiConverterSequenceTypeTokenContract::lift(RustBuffe
     return ret;
 }
 
-RustBuffer FfiConverterSequenceTypeTokenContract::lower(const std::vector<TokenContract> &val) {
+RustBuffer FfiConverterSequenceTypeTokenBalance::lower(const std::vector<std::shared_ptr<TokenBalance>> &val) {
     auto buf = rustbuffer_alloc(allocation_size(val));
     auto stream = RustStream(&buf);
 
@@ -7283,40 +7652,40 @@ RustBuffer FfiConverterSequenceTypeTokenContract::lower(const std::vector<TokenC
     return buf;
 }
 
-std::vector<TokenContract> FfiConverterSequenceTypeTokenContract::read(RustStream &stream) {
-    std::vector<TokenContract> ret;
+std::vector<std::shared_ptr<TokenBalance>> FfiConverterSequenceTypeTokenBalance::read(RustStream &stream) {
+    std::vector<std::shared_ptr<TokenBalance>> ret;
     int32_t count;
     stream >> count;
 
     ret.reserve(count);
 
     for (decltype(count) i = 0; i < count; i++) {
-        ret.push_back(FfiConverterTypeTokenContract::read(stream));
+        ret.push_back(std::make_shared<TokenBalance>(FfiConverterTypeTokenBalance::read(stream)));
     }
 
     return ret;
 }
 
-void FfiConverterSequenceTypeTokenContract::write(RustStream &stream, const std::vector<TokenContract> &val) {
+void FfiConverterSequenceTypeTokenBalance::write(RustStream &stream, const std::vector<std::shared_ptr<TokenBalance>> &val) {
     stream << static_cast<int32_t>(val.size());
 
     for (auto &elem : val) {
-        FfiConverterTypeTokenContract::write(stream, elem);
+        FfiConverterTypeTokenBalance::write(stream, *elem);
     }
 }
 
-uint64_t FfiConverterSequenceTypeTokenContract::allocation_size(const std::vector<TokenContract> &val) {
+uint64_t FfiConverterSequenceTypeTokenBalance::allocation_size(const std::vector<std::shared_ptr<TokenBalance>> &val) {
     uint64_t size = sizeof(int32_t);
 
     for (auto &elem : val) {
-        size += FfiConverterTypeTokenContract::allocation_size(elem);
+        size += FfiConverterTypeTokenBalance::allocation_size(*elem);
     }
 
     return size;
 }
 
 
-std::vector<TokenTransfer> FfiConverterSequenceTypeTokenTransfer::lift(RustBuffer buf) {
+std::vector<std::shared_ptr<TokenContract>> FfiConverterSequenceTypeTokenContract::lift(RustBuffer buf) {
     auto stream = RustStream(&buf);
     auto ret = read(stream);
 
@@ -7325,7 +7694,7 @@ std::vector<TokenTransfer> FfiConverterSequenceTypeTokenTransfer::lift(RustBuffe
     return ret;
 }
 
-RustBuffer FfiConverterSequenceTypeTokenTransfer::lower(const std::vector<TokenTransfer> &val) {
+RustBuffer FfiConverterSequenceTypeTokenContract::lower(const std::vector<std::shared_ptr<TokenContract>> &val) {
     auto buf = rustbuffer_alloc(allocation_size(val));
     auto stream = RustStream(&buf);
 
@@ -7334,40 +7703,40 @@ RustBuffer FfiConverterSequenceTypeTokenTransfer::lower(const std::vector<TokenT
     return buf;
 }
 
-std::vector<TokenTransfer> FfiConverterSequenceTypeTokenTransfer::read(RustStream &stream) {
-    std::vector<TokenTransfer> ret;
+std::vector<std::shared_ptr<TokenContract>> FfiConverterSequenceTypeTokenContract::read(RustStream &stream) {
+    std::vector<std::shared_ptr<TokenContract>> ret;
     int32_t count;
     stream >> count;
 
     ret.reserve(count);
 
     for (decltype(count) i = 0; i < count; i++) {
-        ret.push_back(FfiConverterTypeTokenTransfer::read(stream));
+        ret.push_back(std::make_shared<TokenContract>(FfiConverterTypeTokenContract::read(stream)));
     }
 
     return ret;
 }
 
-void FfiConverterSequenceTypeTokenTransfer::write(RustStream &stream, const std::vector<TokenTransfer> &val) {
+void FfiConverterSequenceTypeTokenContract::write(RustStream &stream, const std::vector<std::shared_ptr<TokenContract>> &val) {
     stream << static_cast<int32_t>(val.size());
 
     for (auto &elem : val) {
-        FfiConverterTypeTokenTransfer::write(stream, elem);
+        FfiConverterTypeTokenContract::write(stream, *elem);
     }
 }
 
-uint64_t FfiConverterSequenceTypeTokenTransfer::allocation_size(const std::vector<TokenTransfer> &val) {
+uint64_t FfiConverterSequenceTypeTokenContract::allocation_size(const std::vector<std::shared_ptr<TokenContract>> &val) {
     uint64_t size = sizeof(int32_t);
 
     for (auto &elem : val) {
-        size += FfiConverterTypeTokenTransfer::allocation_size(elem);
+        size += FfiConverterTypeTokenContract::allocation_size(*elem);
     }
 
     return size;
 }
 
 
-std::vector<Transaction> FfiConverterSequenceTypeTransaction::lift(RustBuffer buf) {
+std::vector<std::shared_ptr<TokenTransfer>> FfiConverterSequenceTypeTokenTransfer::lift(RustBuffer buf) {
     auto stream = RustStream(&buf);
     auto ret = read(stream);
 
@@ -7376,7 +7745,7 @@ std::vector<Transaction> FfiConverterSequenceTypeTransaction::lift(RustBuffer bu
     return ret;
 }
 
-RustBuffer FfiConverterSequenceTypeTransaction::lower(const std::vector<Transaction> &val) {
+RustBuffer FfiConverterSequenceTypeTokenTransfer::lower(const std::vector<std::shared_ptr<TokenTransfer>> &val) {
     auto buf = rustbuffer_alloc(allocation_size(val));
     auto stream = RustStream(&buf);
 
@@ -7385,40 +7754,40 @@ RustBuffer FfiConverterSequenceTypeTransaction::lower(const std::vector<Transact
     return buf;
 }
 
-std::vector<Transaction> FfiConverterSequenceTypeTransaction::read(RustStream &stream) {
-    std::vector<Transaction> ret;
+std::vector<std::shared_ptr<TokenTransfer>> FfiConverterSequenceTypeTokenTransfer::read(RustStream &stream) {
+    std::vector<std::shared_ptr<TokenTransfer>> ret;
     int32_t count;
     stream >> count;
 
     ret.reserve(count);
 
     for (decltype(count) i = 0; i < count; i++) {
-        ret.push_back(FfiConverterTypeTransaction::read(stream));
+        ret.push_back(std::make_shared<TokenTransfer>(FfiConverterTypeTokenTransfer::read(stream)));
     }
 
     return ret;
 }
 
-void FfiConverterSequenceTypeTransaction::write(RustStream &stream, const std::vector<Transaction> &val) {
+void FfiConverterSequenceTypeTokenTransfer::write(RustStream &stream, const std::vector<std::shared_ptr<TokenTransfer>> &val) {
     stream << static_cast<int32_t>(val.size());
 
     for (auto &elem : val) {
-        FfiConverterTypeTransaction::write(stream, elem);
+        FfiConverterTypeTokenTransfer::write(stream, *elem);
     }
 }
 
-uint64_t FfiConverterSequenceTypeTransaction::allocation_size(const std::vector<Transaction> &val) {
+uint64_t FfiConverterSequenceTypeTokenTransfer::allocation_size(const std::vector<std::shared_ptr<TokenTransfer>> &val) {
     uint64_t size = sizeof(int32_t);
 
     for (auto &elem : val) {
-        size += FfiConverterTypeTransaction::allocation_size(elem);
+        size += FfiConverterTypeTokenTransfer::allocation_size(*elem);
     }
 
     return size;
 }
 
 
-std::vector<TransactionCall> FfiConverterSequenceTypeTransactionCall::lift(RustBuffer buf) {
+std::vector<std::shared_ptr<Transaction>> FfiConverterSequenceTypeTransaction::lift(RustBuffer buf) {
     auto stream = RustStream(&buf);
     auto ret = read(stream);
 
@@ -7427,7 +7796,7 @@ std::vector<TransactionCall> FfiConverterSequenceTypeTransactionCall::lift(RustB
     return ret;
 }
 
-RustBuffer FfiConverterSequenceTypeTransactionCall::lower(const std::vector<TransactionCall> &val) {
+RustBuffer FfiConverterSequenceTypeTransaction::lower(const std::vector<std::shared_ptr<Transaction>> &val) {
     auto buf = rustbuffer_alloc(allocation_size(val));
     auto stream = RustStream(&buf);
 
@@ -7436,33 +7805,84 @@ RustBuffer FfiConverterSequenceTypeTransactionCall::lower(const std::vector<Tran
     return buf;
 }
 
-std::vector<TransactionCall> FfiConverterSequenceTypeTransactionCall::read(RustStream &stream) {
-    std::vector<TransactionCall> ret;
+std::vector<std::shared_ptr<Transaction>> FfiConverterSequenceTypeTransaction::read(RustStream &stream) {
+    std::vector<std::shared_ptr<Transaction>> ret;
     int32_t count;
     stream >> count;
 
     ret.reserve(count);
 
     for (decltype(count) i = 0; i < count; i++) {
-        ret.push_back(FfiConverterTypeTransactionCall::read(stream));
+        ret.push_back(std::make_shared<Transaction>(FfiConverterTypeTransaction::read(stream)));
     }
 
     return ret;
 }
 
-void FfiConverterSequenceTypeTransactionCall::write(RustStream &stream, const std::vector<TransactionCall> &val) {
+void FfiConverterSequenceTypeTransaction::write(RustStream &stream, const std::vector<std::shared_ptr<Transaction>> &val) {
     stream << static_cast<int32_t>(val.size());
 
     for (auto &elem : val) {
-        FfiConverterTypeTransactionCall::write(stream, elem);
+        FfiConverterTypeTransaction::write(stream, *elem);
     }
 }
 
-uint64_t FfiConverterSequenceTypeTransactionCall::allocation_size(const std::vector<TransactionCall> &val) {
+uint64_t FfiConverterSequenceTypeTransaction::allocation_size(const std::vector<std::shared_ptr<Transaction>> &val) {
     uint64_t size = sizeof(int32_t);
 
     for (auto &elem : val) {
-        size += FfiConverterTypeTransactionCall::allocation_size(elem);
+        size += FfiConverterTypeTransaction::allocation_size(*elem);
+    }
+
+    return size;
+}
+
+
+std::vector<std::shared_ptr<TransactionCall>> FfiConverterSequenceTypeTransactionCall::lift(RustBuffer buf) {
+    auto stream = RustStream(&buf);
+    auto ret = read(stream);
+
+    rustbuffer_free(buf);
+
+    return ret;
+}
+
+RustBuffer FfiConverterSequenceTypeTransactionCall::lower(const std::vector<std::shared_ptr<TransactionCall>> &val) {
+    auto buf = rustbuffer_alloc(allocation_size(val));
+    auto stream = RustStream(&buf);
+
+    write(stream, val);
+
+    return buf;
+}
+
+std::vector<std::shared_ptr<TransactionCall>> FfiConverterSequenceTypeTransactionCall::read(RustStream &stream) {
+    std::vector<std::shared_ptr<TransactionCall>> ret;
+    int32_t count;
+    stream >> count;
+
+    ret.reserve(count);
+
+    for (decltype(count) i = 0; i < count; i++) {
+        ret.push_back(std::make_shared<TransactionCall>(FfiConverterTypeTransactionCall::read(stream)));
+    }
+
+    return ret;
+}
+
+void FfiConverterSequenceTypeTransactionCall::write(RustStream &stream, const std::vector<std::shared_ptr<TransactionCall>> &val) {
+    stream << static_cast<int32_t>(val.size());
+
+    for (auto &elem : val) {
+        FfiConverterTypeTransactionCall::write(stream, *elem);
+    }
+}
+
+uint64_t FfiConverterSequenceTypeTransactionCall::allocation_size(const std::vector<std::shared_ptr<TransactionCall>> &val) {
+    uint64_t size = sizeof(int32_t);
+
+    for (auto &elem : val) {
+        size += FfiConverterTypeTransactionCall::allocation_size(*elem);
     }
 
     return size;

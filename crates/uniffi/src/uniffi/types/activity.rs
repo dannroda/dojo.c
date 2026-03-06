@@ -4,12 +4,14 @@ use chrono::DateTime;
 use super::core::*;
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct ActionCount {
     pub action_name: String,
     pub count: u32,
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct Activity {
     pub id: String,
     pub world_address: FieldElement,
@@ -45,6 +47,7 @@ impl From<torii_proto::Activity> for Activity {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct ActivityQuery {
     pub world_addresses: Vec<FieldElement>,
     pub namespaces: Vec<String>,

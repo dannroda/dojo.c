@@ -2,6 +2,7 @@
 use super::core::*;
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub enum CallType {
     Execute,
     ExecuteFromOutside,
@@ -17,6 +18,7 @@ impl From<torii_proto::CallType> for CallType {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct TransactionCall {
     pub contract_address: FieldElement,
     pub entrypoint: String,
@@ -38,6 +40,7 @@ impl From<torii_proto::TransactionCall> for TransactionCall {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct Transaction {
     pub transaction_hash: FieldElement,
     pub sender_address: FieldElement,
@@ -71,6 +74,7 @@ impl From<torii_proto::Transaction> for Transaction {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct TransactionFilter {
     pub transaction_hashes: Vec<FieldElement>,
     pub caller_addresses: Vec<FieldElement>,
@@ -112,6 +116,7 @@ impl From<TransactionFilter> for torii_proto::TransactionFilter {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct TransactionQuery {
     pub filter: Option<TransactionFilter>,
     pub pagination: Pagination,

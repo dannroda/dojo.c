@@ -66,10 +66,15 @@ struct PlayerAchievementProgress;
 struct PlayerAchievementQuery;
 struct PlayerAchievementStats;
 struct Query;
+struct SearchField;
+struct SearchMatch;
+struct SearchQuery;
+struct SearchResponse;
 struct Signature;
 struct SqlField;
 struct SqlRow;
 struct Struct;
+struct TableSearchResults;
 struct TaskProgress;
 struct Token;
 struct TokenBalance;
@@ -107,6 +112,36 @@ typedef std::string FieldElement;
 typedef std::string U256;
 
 
+enum class ComparisonOperator: int32_t {
+    kEq = 1,
+    kNeq = 2,
+    kGt = 3,
+    kGte = 4,
+    kLt = 5,
+    kLte = 6,
+    kIn = 7,
+    kNotIn = 8,
+    kContains = 9,
+    kContainsAll = 10,
+    kContainsAny = 11,
+    kArrayLengthEq = 12,
+    kArrayLengthGt = 13,
+    kArrayLengthLt = 14
+};
+
+
+enum class PatternMatching: int32_t {
+    kFixedLen = 1,
+    kVariableLen = 2
+};
+
+
+enum class PaginationDirection: int32_t {
+    kForward = 1,
+    kBackward = 2
+};
+
+
 struct PlayerAchievementStats {
     uint32_t total_points;
     uint32_t completed_achievements;
@@ -118,9 +153,47 @@ struct PlayerAchievementStats {
 };
 
 
-enum class PaginationDirection: int32_t {
-    kForward = 1,
-    kBackward = 2
+enum class OrderDirection: int32_t {
+    kAsc = 1,
+    kDesc = 2
+};
+
+
+enum class CallType: int32_t {
+    kExecute = 1,
+    kExecuteFromOutside = 2
+};
+
+
+struct AchievementTask {
+    std::string task_id;
+    std::string description;
+    uint32_t total;
+    uint32_t total_completions;
+    double completion_rate;
+    uint64_t created_at;
+};
+
+
+struct ActionCount {
+    std::string action_name;
+    uint32_t count;
+};
+
+
+enum class ContractType: int32_t {
+    kWorld = 1,
+    kErc20 = 2,
+    kErc721 = 3,
+    kErc1155 = 4,
+    kUdc = 5,
+    kOther = 6
+};
+
+
+struct AttributeFilter {
+    std::string trait_name;
+    std::string trait_value;
 };
 
 namespace uniffi {
@@ -176,65 +249,15 @@ private:
 };
 
 
-struct AchievementTask {
-    std::string task_id;
-    std::string description;
-    uint32_t total;
-    uint32_t total_completions;
-    double completion_rate;
-    uint64_t created_at;
+struct SearchField {
+    std::string key;
+    std::string value;
 };
 
 
 enum class LogicalOperator: int32_t {
     kAnd = 1,
     kOr = 2
-};
-
-
-enum class ContractType: int32_t {
-    kWorld = 1,
-    kErc20 = 2,
-    kErc721 = 3,
-    kErc1155 = 4,
-    kUdc = 5,
-    kOther = 6
-};
-
-
-struct AttributeFilter {
-    std::string trait_name;
-    std::string trait_value;
-};
-
-
-enum class CallType: int32_t {
-    kExecute = 1,
-    kExecuteFromOutside = 2
-};
-
-
-enum class PatternMatching: int32_t {
-    kFixedLen = 1,
-    kVariableLen = 2
-};
-
-
-enum class ComparisonOperator: int32_t {
-    kEq = 1,
-    kNeq = 2,
-    kGt = 3,
-    kGte = 4,
-    kLt = 5,
-    kLte = 6,
-    kIn = 7,
-    kNotIn = 8,
-    kContains = 9,
-    kContainsAll = 10,
-    kContainsAny = 11,
-    kArrayLengthEq = 12,
-    kArrayLengthGt = 13,
-    kArrayLengthLt = 14
 };
 
 
@@ -245,15 +268,16 @@ struct TaskProgress {
 };
 
 
-struct ActionCount {
-    std::string action_name;
-    uint32_t count;
+struct Controller {
+    FieldElement address;
+    std::string username;
+    uint64_t deployed_at_timestamp;
 };
 
 
-enum class OrderDirection: int32_t {
-    kAsc = 1,
-    kDesc = 2
+struct Signature {
+    FieldElement r;
+    FieldElement s;
 };
 
 
@@ -263,10 +287,106 @@ struct ContractQuery {
 };
 
 
-struct Controller {
-    FieldElement address;
-    std::string username;
-    uint64_t deployed_at_timestamp;
+struct Message {
+    std::string message;
+    std::vector<FieldElement> signature;
+    FieldElement world_address;
+};
+
+
+struct SearchMatch {
+    std::string id;
+    std::vector<std::shared_ptr<SearchField>> fields;
+    std::optional<double> score;
+};
+
+
+struct Token {
+    FieldElement contract_address;
+    std::optional<U256> token_id;
+    std::string name;
+    std::string symbol;
+    uint8_t decimals;
+    std::string metadata;
+    std::optional<U256> total_supply;
+};
+
+
+struct SqlField {
+    std::string name;
+    std::shared_ptr<SqlValue> value;
+};
+
+
+struct KeysClause {
+    std::vector<std::optional<FieldElement>> keys;
+    PatternMatching pattern_matching;
+    std::vector<std::string> models;
+};
+
+
+struct Contract {
+    FieldElement contract_address;
+    ContractType contract_type;
+    std::optional<uint64_t> head;
+    std::optional<uint64_t> tps;
+    std::optional<uint64_t> last_block_timestamp;
+    std::optional<FieldElement> last_pending_block_tx;
+    uint64_t updated_at;
+    uint64_t created_at;
+};
+
+
+struct Activity {
+    std::string id;
+    FieldElement world_address;
+    std::string namespace_;
+    FieldElement caller_address;
+    uint64_t session_start;
+    uint64_t session_end;
+    uint32_t action_count;
+    std::vector<std::shared_ptr<ActionCount>> actions;
+    uint64_t updated_at;
+};
+
+
+struct OrderBy {
+    std::string field;
+    OrderDirection direction;
+};
+
+
+struct TokenTransfer {
+    std::string id;
+    FieldElement contract_address;
+    FieldElement from_address;
+    FieldElement to_address;
+    U256 amount;
+    std::optional<U256> token_id;
+    uint64_t executed_at;
+    std::optional<std::string> event_id;
+};
+
+
+struct TransactionFilter {
+    std::vector<FieldElement> transaction_hashes;
+    std::vector<FieldElement> caller_addresses;
+    std::vector<FieldElement> contract_addresses;
+    std::vector<std::string> entrypoints;
+    std::vector<FieldElement> model_selectors;
+    std::optional<uint64_t> from_block;
+    std::optional<uint64_t> to_block;
+};
+
+
+struct TokenContract {
+    FieldElement contract_address;
+    std::string name;
+    std::string symbol;
+    uint8_t decimals;
+    std::string metadata;
+    std::string token_metadata;
+    std::optional<U256> total_supply;
 };
 
 
@@ -284,7 +404,7 @@ struct Achievement {
     std::string icon;
     std::string title;
     std::string description;
-    std::vector<AchievementTask> tasks;
+    std::vector<std::shared_ptr<AchievementTask>> tasks;
     std::optional<std::string> data;
     uint32_t total_completions;
     double completion_rate;
@@ -390,53 +510,6 @@ private:
 };
 
 
-struct TokenContract {
-    FieldElement contract_address;
-    std::string name;
-    std::string symbol;
-    uint8_t decimals;
-    std::string metadata;
-    std::string token_metadata;
-    std::optional<U256> total_supply;
-};
-
-
-struct TransactionCall {
-    FieldElement contract_address;
-    std::string entrypoint;
-    std::vector<FieldElement> calldata;
-    CallType call_type;
-    FieldElement caller_address;
-};
-
-
-struct Event {
-    std::vector<FieldElement> keys;
-    std::vector<FieldElement> data;
-    FieldElement transaction_hash;
-};
-
-
-struct TokenBalance {
-    U256 balance;
-    FieldElement account_address;
-    FieldElement contract_address;
-    std::optional<U256> token_id;
-};
-
-
-struct TokenTransfer {
-    std::string id;
-    FieldElement contract_address;
-    FieldElement from_address;
-    FieldElement to_address;
-    U256 amount;
-    std::optional<U256> token_id;
-    uint64_t executed_at;
-    std::optional<std::string> event_id;
-};
-
-
 struct AggregationEntry {
     std::string id;
     std::string aggregator_id;
@@ -447,62 +520,6 @@ struct AggregationEntry {
     std::string model_id;
     uint64_t created_at;
     uint64_t updated_at;
-};
-
-
-struct OrderBy {
-    std::string field;
-    OrderDirection direction;
-};
-
-
-struct Activity {
-    std::string id;
-    FieldElement world_address;
-    std::string namespace_;
-    FieldElement caller_address;
-    uint64_t session_start;
-    uint64_t session_end;
-    uint32_t action_count;
-    std::vector<ActionCount> actions;
-    uint64_t updated_at;
-};
-
-
-struct Contract {
-    FieldElement contract_address;
-    ContractType contract_type;
-    std::optional<uint64_t> head;
-    std::optional<uint64_t> tps;
-    std::optional<uint64_t> last_block_timestamp;
-    std::optional<FieldElement> last_pending_block_tx;
-    uint64_t updated_at;
-    uint64_t created_at;
-};
-
-
-struct KeysClause {
-    std::vector<std::optional<FieldElement>> keys;
-    PatternMatching pattern_matching;
-    std::vector<std::string> models;
-};
-
-
-struct Token {
-    FieldElement contract_address;
-    std::optional<U256> token_id;
-    std::string name;
-    std::string symbol;
-    uint8_t decimals;
-    std::string metadata;
-    std::optional<U256> total_supply;
-};
-
-
-struct Message {
-    std::string message;
-    std::vector<FieldElement> signature;
-    FieldElement world_address;
 };
 
 
@@ -521,66 +538,96 @@ struct AchievementProgression {
 };
 
 
-struct Signature {
-    FieldElement r;
-    FieldElement s;
+struct TokenBalance {
+    U256 balance;
+    FieldElement account_address;
+    FieldElement contract_address;
+    std::optional<U256> token_id;
 };
 
 
-struct SqlField {
-    std::string name;
-    SqlValue value;
+struct Event {
+    std::vector<FieldElement> keys;
+    std::vector<FieldElement> data;
+    FieldElement transaction_hash;
 };
 
 
-struct TransactionFilter {
-    std::vector<FieldElement> transaction_hashes;
-    std::vector<FieldElement> caller_addresses;
-    std::vector<FieldElement> contract_addresses;
-    std::vector<std::string> entrypoints;
-    std::vector<FieldElement> model_selectors;
-    std::optional<uint64_t> from_block;
-    std::optional<uint64_t> to_block;
+struct TransactionCall {
+    FieldElement contract_address;
+    std::string entrypoint;
+    std::vector<FieldElement> calldata;
+    CallType call_type;
+    FieldElement caller_address;
 };
 
 
-struct PageAchievement {
-    std::vector<Achievement> items;
-    std::optional<std::string> next_cursor;
+struct TableSearchResults {
+    std::string table;
+    uint32_t count;
+    std::vector<std::shared_ptr<SearchMatch>> matches;
 };
 
 
-struct PageEvent {
-    std::vector<Event> items;
+struct SqlRow {
+    std::vector<std::shared_ptr<SqlField>> fields;
+};
+
+
+struct PageTokenContract {
+    std::vector<std::shared_ptr<TokenContract>> items;
     std::optional<std::string> next_cursor;
 };
 
 
 struct PageTokenBalance {
-    std::vector<TokenBalance> items;
-    std::optional<std::string> next_cursor;
-};
-
-
-struct PageToken {
-    std::vector<Token> items;
-    std::optional<std::string> next_cursor;
-};
-
-
-struct SqlRow {
-    std::vector<SqlField> fields;
-};
-
-
-struct PageActivity {
-    std::vector<Activity> items;
+    std::vector<std::shared_ptr<TokenBalance>> items;
     std::optional<std::string> next_cursor;
 };
 
 
 struct PageAggregationEntry {
-    std::vector<AggregationEntry> items;
+    std::vector<std::shared_ptr<AggregationEntry>> items;
+    std::optional<std::string> next_cursor;
+};
+
+
+struct PlayerAchievementProgress {
+    std::shared_ptr<Achievement> achievement;
+    std::vector<std::shared_ptr<TaskProgress>> task_progress;
+    bool completed;
+    double progress_percentage;
+};
+
+
+struct PageTokenTransfer {
+    std::vector<std::shared_ptr<TokenTransfer>> items;
+    std::optional<std::string> next_cursor;
+};
+
+
+struct PageEvent {
+    std::vector<std::shared_ptr<Event>> items;
+    std::optional<std::string> next_cursor;
+};
+
+
+struct PageActivity {
+    std::vector<std::shared_ptr<Activity>> items;
+    std::optional<std::string> next_cursor;
+};
+
+
+struct Pagination {
+    std::optional<std::string> cursor;
+    std::optional<uint32_t> limit;
+    PaginationDirection direction;
+    std::vector<std::shared_ptr<OrderBy>> order_by;
+};
+
+
+struct PageAchievement {
+    std::vector<std::shared_ptr<Achievement>> items;
     std::optional<std::string> next_cursor;
 };
 
@@ -595,70 +642,53 @@ struct Transaction {
     uint64_t block_number;
     std::string transaction_type;
     uint64_t block_timestamp;
-    std::vector<TransactionCall> calls;
+    std::vector<std::shared_ptr<TransactionCall>> calls;
     std::vector<FieldElement> unique_models;
 };
 
 
-struct PageTokenContract {
-    std::vector<TokenContract> items;
-    std::optional<std::string> next_cursor;
-};
-
-
-struct PlayerAchievementProgress {
-    Achievement achievement;
-    std::vector<TaskProgress> task_progress;
-    bool completed;
-    double progress_percentage;
-};
-
-
-struct Pagination {
-    std::optional<std::string> cursor;
-    std::optional<uint32_t> limit;
-    PaginationDirection direction;
-    std::vector<OrderBy> order_by;
-};
-
-
 struct PageController {
-    std::vector<Controller> items;
+    std::vector<std::shared_ptr<Controller>> items;
     std::optional<std::string> next_cursor;
 };
 
 
-struct PageTokenTransfer {
-    std::vector<TokenTransfer> items;
+struct PageToken {
+    std::vector<std::shared_ptr<Token>> items;
     std::optional<std::string> next_cursor;
+};
+
+
+struct TokenTransferQuery {
+    std::vector<FieldElement> contract_addresses;
+    std::vector<FieldElement> account_addresses;
+    std::vector<U256> token_ids;
+    std::shared_ptr<Pagination> pagination;
 };
 
 
 struct PlayerAchievementEntry {
     FieldElement player_address;
-    PlayerAchievementStats stats;
-    std::vector<PlayerAchievementProgress> achievements;
+    std::shared_ptr<PlayerAchievementStats> stats;
+    std::vector<std::shared_ptr<PlayerAchievementProgress>> achievements;
 };
 
 
-struct AggregationQuery {
-    std::vector<std::string> aggregator_ids;
-    std::vector<std::string> entity_ids;
-    Pagination pagination;
+struct SearchResponse {
+    uint32_t total;
+    std::vector<std::shared_ptr<TableSearchResults>> results;
+};
+
+
+struct TransactionQuery {
+    std::optional<std::shared_ptr<TransactionFilter>> filter;
+    std::shared_ptr<Pagination> pagination;
 };
 
 
 struct PageTransaction {
-    std::vector<Transaction> items;
+    std::vector<std::shared_ptr<Transaction>> items;
     std::optional<std::string> next_cursor;
-};
-
-
-struct TokenQuery {
-    std::vector<FieldElement> contract_addresses;
-    std::vector<U256> token_ids;
-    std::vector<AttributeFilter> attribute_filters;
-    Pagination pagination;
 };
 
 
@@ -666,35 +696,22 @@ struct TokenBalanceQuery {
     std::vector<FieldElement> contract_addresses;
     std::vector<FieldElement> account_addresses;
     std::vector<U256> token_ids;
-    Pagination pagination;
+    std::shared_ptr<Pagination> pagination;
 };
 
 
 struct TokenContractQuery {
     std::vector<FieldElement> contract_addresses;
     std::vector<ContractType> contract_types;
-    Pagination pagination;
+    std::shared_ptr<Pagination> pagination;
 };
 
 
-struct TransactionQuery {
-    std::optional<std::shared_ptr<TransactionFilter>> filter;
-    Pagination pagination;
-};
-
-
-struct ControllerQuery {
-    Pagination pagination;
+struct TokenQuery {
     std::vector<FieldElement> contract_addresses;
-    std::vector<std::string> usernames;
-};
-
-
-struct AchievementQuery {
-    std::vector<FieldElement> world_addresses;
-    std::vector<std::string> namespaces;
-    std::optional<bool> hidden;
-    Pagination pagination;
+    std::vector<U256> token_ids;
+    std::vector<std::shared_ptr<AttributeFilter>> attribute_filters;
+    std::shared_ptr<Pagination> pagination;
 };
 
 
@@ -704,21 +721,7 @@ struct ActivityQuery {
     std::vector<FieldElement> caller_addresses;
     std::optional<uint64_t> from_time;
     std::optional<uint64_t> to_time;
-    Pagination pagination;
-};
-
-
-struct EventQuery {
-    std::optional<std::shared_ptr<KeysClause>> keys;
-    Pagination pagination;
-};
-
-
-struct TokenTransferQuery {
-    std::vector<FieldElement> contract_addresses;
-    std::vector<FieldElement> account_addresses;
-    std::vector<U256> token_ids;
-    Pagination pagination;
+    std::shared_ptr<Pagination> pagination;
 };
 
 
@@ -726,12 +729,40 @@ struct PlayerAchievementQuery {
     std::vector<FieldElement> world_addresses;
     std::vector<std::string> namespaces;
     std::vector<FieldElement> player_addresses;
-    Pagination pagination;
+    std::shared_ptr<Pagination> pagination;
+};
+
+
+struct EventQuery {
+    std::optional<std::shared_ptr<KeysClause>> keys;
+    std::shared_ptr<Pagination> pagination;
+};
+
+
+struct AggregationQuery {
+    std::vector<std::string> aggregator_ids;
+    std::vector<std::string> entity_ids;
+    std::shared_ptr<Pagination> pagination;
+};
+
+
+struct AchievementQuery {
+    std::vector<FieldElement> world_addresses;
+    std::vector<std::string> namespaces;
+    std::optional<bool> hidden;
+    std::shared_ptr<Pagination> pagination;
+};
+
+
+struct ControllerQuery {
+    std::shared_ptr<Pagination> pagination;
+    std::vector<FieldElement> contract_addresses;
+    std::vector<std::string> usernames;
 };
 
 
 struct PagePlayerAchievement {
-    std::vector<PlayerAchievementEntry> items;
+    std::vector<std::shared_ptr<PlayerAchievementEntry>> items;
     std::optional<std::string> next_cursor;
 };
 
@@ -761,17 +792,18 @@ struct ToriiClient
     PageActivity activities(const ActivityQuery &query);
     PageAggregationEntry aggregations(const AggregationQuery &query);
     void cancel_subscription(uint64_t subscription_id);
-    std::vector<Contract> contracts(const ContractQuery &query);
+    std::vector<std::shared_ptr<Contract>> contracts(const ContractQuery &query);
     PageController controllers(const ControllerQuery &query);
     PageEntity entities(const Query &query);
     PageEntity event_messages(const Query &query);
     PagePlayerAchievement player_achievements(const PlayerAchievementQuery &query);
     std::string publish_message(const Message &message);
-    std::vector<std::string> publish_message_batch(const std::vector<Message> &messages);
-    std::vector<SqlRow> sql(const std::string &query);
+    std::vector<std::string> publish_message_batch(const std::vector<std::shared_ptr<Message>> &messages);
+    SearchResponse search(const SearchQuery &query);
+    std::vector<std::shared_ptr<SqlRow>> sql(const std::string &query);
     PageEvent starknet_events(const EventQuery &query);
     uint64_t subscribe_entity_updates(std::optional<std::shared_ptr<Clause>> clause, const std::vector<FieldElement> &world_addresses, const std::shared_ptr<EntityUpdateCallback> &callback);
-    uint64_t subscribe_event_updates(const std::vector<KeysClause> &keys, const std::shared_ptr<EventUpdateCallback> &callback);
+    uint64_t subscribe_event_updates(const std::vector<std::shared_ptr<KeysClause>> &keys, const std::shared_ptr<EventUpdateCallback> &callback);
     uint64_t subscribe_token_balance_updates(const std::vector<FieldElement> &contract_addresses, const std::vector<FieldElement> &account_addresses, const std::vector<U256> &token_ids, const std::shared_ptr<TokenBalanceUpdateCallback> &callback);
     uint64_t subscribe_token_updates(const std::vector<FieldElement> &contract_addresses, const std::vector<U256> &token_ids, const std::shared_ptr<TokenUpdateCallback> &callback);
     uint64_t subscribe_transaction_updates(std::optional<std::shared_ptr<TransactionFilter>> filter, const std::shared_ptr<TransactionUpdateCallback> &callback);
@@ -866,11 +898,17 @@ struct PageEntity {
 
 struct Query {
     std::vector<FieldElement> world_addresses;
-    Pagination pagination;
+    std::shared_ptr<Pagination> pagination;
     std::optional<std::shared_ptr<Clause>> clause;
     bool no_hashed_keys;
     std::vector<std::string> models;
     bool historical;
+};
+
+
+struct SearchQuery {
+    std::string query;
+    uint32_t limit;
 };
 
 
@@ -895,7 +933,7 @@ struct Clause {
         std::vector<FieldElement> keys;
     };
     struct kKeys {
-        KeysClause clause;
+        std::shared_ptr<KeysClause> clause;
     };
     struct kMember {
         std::shared_ptr<MemberClause> clause;
@@ -1088,7 +1126,7 @@ struct FfiConverterMemberValue;
 struct MemberValue {
     friend uniffi::FfiConverterMemberValue;
     struct kPrimitive {
-        Primitive value;
+        std::shared_ptr<Primitive> value;
     };
     struct kString {
         std::string value;
@@ -1133,7 +1171,7 @@ struct FfiConverterTy;
 struct Ty {
     friend uniffi::FfiConverterTy;
     struct kPrimitive {
-        Primitive value;
+        std::shared_ptr<Primitive> value;
     };
     struct kStruct {
         std::shared_ptr<Struct> value;
@@ -1252,16 +1290,16 @@ struct EntityUpdateCallback {
 
 namespace uniffi {
     struct UniffiCallbackInterfaceEntityUpdateCallback {
-        static void on_update(uint64_t uniffi_handle,RustBuffer entity,void * uniffi_out_return,RustCallStatus *out_status);
-        static void on_error(uint64_t uniffi_handle,RustBuffer error,void * uniffi_out_return,RustCallStatus *out_status);
+        static void on_update(uint64_t uniffi_handle,RustBuffer entity,uint64_t uniffi_out_return,RustCallStatus *out_status);
+        static void on_error(uint64_t uniffi_handle,RustBuffer error,uint64_t uniffi_out_return,RustCallStatus *out_status);
 
         static void uniffi_free(uint64_t uniffi_handle);
         static void init();
     private:
         static inline UniffiVTableCallbackInterfaceEntityUpdateCallback vtable = UniffiVTableCallbackInterfaceEntityUpdateCallback {
+            .uniffi_free = reinterpret_cast<void *>(&uniffi_free),
             .on_update = reinterpret_cast<void *>(&on_update),
-            .on_error = reinterpret_cast<void *>(&on_error),
-            .uniffi_free = reinterpret_cast<void *>(&uniffi_free)
+            .on_error = reinterpret_cast<void *>(&on_error)
         };
     };
 }
@@ -1278,16 +1316,16 @@ struct EventUpdateCallback {
 
 namespace uniffi {
     struct UniffiCallbackInterfaceEventUpdateCallback {
-        static void on_update(uint64_t uniffi_handle,RustBuffer event,void * uniffi_out_return,RustCallStatus *out_status);
-        static void on_error(uint64_t uniffi_handle,RustBuffer error,void * uniffi_out_return,RustCallStatus *out_status);
+        static void on_update(uint64_t uniffi_handle,RustBuffer event,uint64_t uniffi_out_return,RustCallStatus *out_status);
+        static void on_error(uint64_t uniffi_handle,RustBuffer error,uint64_t uniffi_out_return,RustCallStatus *out_status);
 
         static void uniffi_free(uint64_t uniffi_handle);
         static void init();
     private:
         static inline UniffiVTableCallbackInterfaceEventUpdateCallback vtable = UniffiVTableCallbackInterfaceEventUpdateCallback {
+            .uniffi_free = reinterpret_cast<void *>(&uniffi_free),
             .on_update = reinterpret_cast<void *>(&on_update),
-            .on_error = reinterpret_cast<void *>(&on_error),
-            .uniffi_free = reinterpret_cast<void *>(&uniffi_free)
+            .on_error = reinterpret_cast<void *>(&on_error)
         };
     };
 }
@@ -1304,16 +1342,16 @@ struct TokenBalanceUpdateCallback {
 
 namespace uniffi {
     struct UniffiCallbackInterfaceTokenBalanceUpdateCallback {
-        static void on_update(uint64_t uniffi_handle,RustBuffer balance,void * uniffi_out_return,RustCallStatus *out_status);
-        static void on_error(uint64_t uniffi_handle,RustBuffer error,void * uniffi_out_return,RustCallStatus *out_status);
+        static void on_update(uint64_t uniffi_handle,RustBuffer balance,uint64_t uniffi_out_return,RustCallStatus *out_status);
+        static void on_error(uint64_t uniffi_handle,RustBuffer error,uint64_t uniffi_out_return,RustCallStatus *out_status);
 
         static void uniffi_free(uint64_t uniffi_handle);
         static void init();
     private:
         static inline UniffiVTableCallbackInterfaceTokenBalanceUpdateCallback vtable = UniffiVTableCallbackInterfaceTokenBalanceUpdateCallback {
+            .uniffi_free = reinterpret_cast<void *>(&uniffi_free),
             .on_update = reinterpret_cast<void *>(&on_update),
-            .on_error = reinterpret_cast<void *>(&on_error),
-            .uniffi_free = reinterpret_cast<void *>(&uniffi_free)
+            .on_error = reinterpret_cast<void *>(&on_error)
         };
     };
 }
@@ -1330,16 +1368,16 @@ struct TokenUpdateCallback {
 
 namespace uniffi {
     struct UniffiCallbackInterfaceTokenUpdateCallback {
-        static void on_update(uint64_t uniffi_handle,RustBuffer token,void * uniffi_out_return,RustCallStatus *out_status);
-        static void on_error(uint64_t uniffi_handle,RustBuffer error,void * uniffi_out_return,RustCallStatus *out_status);
+        static void on_update(uint64_t uniffi_handle,RustBuffer token,uint64_t uniffi_out_return,RustCallStatus *out_status);
+        static void on_error(uint64_t uniffi_handle,RustBuffer error,uint64_t uniffi_out_return,RustCallStatus *out_status);
 
         static void uniffi_free(uint64_t uniffi_handle);
         static void init();
     private:
         static inline UniffiVTableCallbackInterfaceTokenUpdateCallback vtable = UniffiVTableCallbackInterfaceTokenUpdateCallback {
+            .uniffi_free = reinterpret_cast<void *>(&uniffi_free),
             .on_update = reinterpret_cast<void *>(&on_update),
-            .on_error = reinterpret_cast<void *>(&on_error),
-            .uniffi_free = reinterpret_cast<void *>(&uniffi_free)
+            .on_error = reinterpret_cast<void *>(&on_error)
         };
     };
 }
@@ -1356,16 +1394,16 @@ struct TransactionUpdateCallback {
 
 namespace uniffi {
     struct UniffiCallbackInterfaceTransactionUpdateCallback {
-        static void on_update(uint64_t uniffi_handle,RustBuffer transaction,void * uniffi_out_return,RustCallStatus *out_status);
-        static void on_error(uint64_t uniffi_handle,RustBuffer error,void * uniffi_out_return,RustCallStatus *out_status);
+        static void on_update(uint64_t uniffi_handle,RustBuffer transaction,uint64_t uniffi_out_return,RustCallStatus *out_status);
+        static void on_error(uint64_t uniffi_handle,RustBuffer error,uint64_t uniffi_out_return,RustCallStatus *out_status);
 
         static void uniffi_free(uint64_t uniffi_handle);
         static void init();
     private:
         static inline UniffiVTableCallbackInterfaceTransactionUpdateCallback vtable = UniffiVTableCallbackInterfaceTransactionUpdateCallback {
+            .uniffi_free = reinterpret_cast<void *>(&uniffi_free),
             .on_update = reinterpret_cast<void *>(&on_update),
-            .on_error = reinterpret_cast<void *>(&on_error),
-            .uniffi_free = reinterpret_cast<void *>(&uniffi_free)
+            .on_error = reinterpret_cast<void *>(&on_error)
         };
     };
 }
@@ -1915,6 +1953,38 @@ struct FfiConverterTypeQuery {
     static uint64_t allocation_size(const Query &);
 };
 
+struct FfiConverterTypeSearchField {
+    static SearchField lift(RustBuffer);
+    static RustBuffer lower(const SearchField &);
+    static SearchField read(RustStream &);
+    static void write(RustStream &, const SearchField &);
+    static uint64_t allocation_size(const SearchField &);
+};
+
+struct FfiConverterTypeSearchMatch {
+    static SearchMatch lift(RustBuffer);
+    static RustBuffer lower(const SearchMatch &);
+    static SearchMatch read(RustStream &);
+    static void write(RustStream &, const SearchMatch &);
+    static uint64_t allocation_size(const SearchMatch &);
+};
+
+struct FfiConverterTypeSearchQuery {
+    static SearchQuery lift(RustBuffer);
+    static RustBuffer lower(const SearchQuery &);
+    static SearchQuery read(RustStream &);
+    static void write(RustStream &, const SearchQuery &);
+    static uint64_t allocation_size(const SearchQuery &);
+};
+
+struct FfiConverterTypeSearchResponse {
+    static SearchResponse lift(RustBuffer);
+    static RustBuffer lower(const SearchResponse &);
+    static SearchResponse read(RustStream &);
+    static void write(RustStream &, const SearchResponse &);
+    static uint64_t allocation_size(const SearchResponse &);
+};
+
 struct FfiConverterTypeSignature {
     static Signature lift(RustBuffer);
     static RustBuffer lower(const Signature &);
@@ -1945,6 +2015,14 @@ struct FfiConverterTypeStruct {
     static Struct read(RustStream &);
     static void write(RustStream &, const Struct &);
     static uint64_t allocation_size(const Struct &);
+};
+
+struct FfiConverterTypeTableSearchResults {
+    static TableSearchResults lift(RustBuffer);
+    static RustBuffer lower(const TableSearchResults &);
+    static TableSearchResults read(RustStream &);
+    static void write(RustStream &, const TableSearchResults &);
+    static uint64_t allocation_size(const TableSearchResults &);
 };
 
 struct FfiConverterTypeTaskProgress {
@@ -2226,6 +2304,13 @@ struct FfiConverterOptionalUInt64 {
     static void write(RustStream &stream, const std::optional<uint64_t>& value);
     static uint64_t allocation_size(const std::optional<uint64_t> &val);
 };
+struct FfiConverterOptionalDouble {
+    static std::optional<double> lift(RustBuffer buf);
+    static RustBuffer lower(const std::optional<double>& val);
+    static std::optional<double> read(RustStream &stream);
+    static void write(RustStream &stream, const std::optional<double>& value);
+    static uint64_t allocation_size(const std::optional<double> &val);
+};
 struct FfiConverterOptionalBool {
     static std::optional<bool> lift(RustBuffer buf);
     static RustBuffer lower(const std::optional<bool>& val);
@@ -2293,67 +2378,67 @@ struct FfiConverterSequenceString {
 };
 
 struct FfiConverterSequenceTypeAchievement {
-    static std::vector<Achievement> lift(RustBuffer);
-    static RustBuffer lower(const std::vector<Achievement> &);
-    static std::vector<Achievement> read(RustStream &);
-    static void write(RustStream &, const std::vector<Achievement> &);
-    static uint64_t allocation_size(const std::vector<Achievement> &);
+    static std::vector<std::shared_ptr<Achievement>> lift(RustBuffer);
+    static RustBuffer lower(const std::vector<std::shared_ptr<Achievement>> &);
+    static std::vector<std::shared_ptr<Achievement>> read(RustStream &);
+    static void write(RustStream &, const std::vector<std::shared_ptr<Achievement>> &);
+    static uint64_t allocation_size(const std::vector<std::shared_ptr<Achievement>> &);
 };
 
 struct FfiConverterSequenceTypeAchievementTask {
-    static std::vector<AchievementTask> lift(RustBuffer);
-    static RustBuffer lower(const std::vector<AchievementTask> &);
-    static std::vector<AchievementTask> read(RustStream &);
-    static void write(RustStream &, const std::vector<AchievementTask> &);
-    static uint64_t allocation_size(const std::vector<AchievementTask> &);
+    static std::vector<std::shared_ptr<AchievementTask>> lift(RustBuffer);
+    static RustBuffer lower(const std::vector<std::shared_ptr<AchievementTask>> &);
+    static std::vector<std::shared_ptr<AchievementTask>> read(RustStream &);
+    static void write(RustStream &, const std::vector<std::shared_ptr<AchievementTask>> &);
+    static uint64_t allocation_size(const std::vector<std::shared_ptr<AchievementTask>> &);
 };
 
 struct FfiConverterSequenceTypeActionCount {
-    static std::vector<ActionCount> lift(RustBuffer);
-    static RustBuffer lower(const std::vector<ActionCount> &);
-    static std::vector<ActionCount> read(RustStream &);
-    static void write(RustStream &, const std::vector<ActionCount> &);
-    static uint64_t allocation_size(const std::vector<ActionCount> &);
+    static std::vector<std::shared_ptr<ActionCount>> lift(RustBuffer);
+    static RustBuffer lower(const std::vector<std::shared_ptr<ActionCount>> &);
+    static std::vector<std::shared_ptr<ActionCount>> read(RustStream &);
+    static void write(RustStream &, const std::vector<std::shared_ptr<ActionCount>> &);
+    static uint64_t allocation_size(const std::vector<std::shared_ptr<ActionCount>> &);
 };
 
 struct FfiConverterSequenceTypeActivity {
-    static std::vector<Activity> lift(RustBuffer);
-    static RustBuffer lower(const std::vector<Activity> &);
-    static std::vector<Activity> read(RustStream &);
-    static void write(RustStream &, const std::vector<Activity> &);
-    static uint64_t allocation_size(const std::vector<Activity> &);
+    static std::vector<std::shared_ptr<Activity>> lift(RustBuffer);
+    static RustBuffer lower(const std::vector<std::shared_ptr<Activity>> &);
+    static std::vector<std::shared_ptr<Activity>> read(RustStream &);
+    static void write(RustStream &, const std::vector<std::shared_ptr<Activity>> &);
+    static uint64_t allocation_size(const std::vector<std::shared_ptr<Activity>> &);
 };
 
 struct FfiConverterSequenceTypeAggregationEntry {
-    static std::vector<AggregationEntry> lift(RustBuffer);
-    static RustBuffer lower(const std::vector<AggregationEntry> &);
-    static std::vector<AggregationEntry> read(RustStream &);
-    static void write(RustStream &, const std::vector<AggregationEntry> &);
-    static uint64_t allocation_size(const std::vector<AggregationEntry> &);
+    static std::vector<std::shared_ptr<AggregationEntry>> lift(RustBuffer);
+    static RustBuffer lower(const std::vector<std::shared_ptr<AggregationEntry>> &);
+    static std::vector<std::shared_ptr<AggregationEntry>> read(RustStream &);
+    static void write(RustStream &, const std::vector<std::shared_ptr<AggregationEntry>> &);
+    static uint64_t allocation_size(const std::vector<std::shared_ptr<AggregationEntry>> &);
 };
 
 struct FfiConverterSequenceTypeAttributeFilter {
-    static std::vector<AttributeFilter> lift(RustBuffer);
-    static RustBuffer lower(const std::vector<AttributeFilter> &);
-    static std::vector<AttributeFilter> read(RustStream &);
-    static void write(RustStream &, const std::vector<AttributeFilter> &);
-    static uint64_t allocation_size(const std::vector<AttributeFilter> &);
+    static std::vector<std::shared_ptr<AttributeFilter>> lift(RustBuffer);
+    static RustBuffer lower(const std::vector<std::shared_ptr<AttributeFilter>> &);
+    static std::vector<std::shared_ptr<AttributeFilter>> read(RustStream &);
+    static void write(RustStream &, const std::vector<std::shared_ptr<AttributeFilter>> &);
+    static uint64_t allocation_size(const std::vector<std::shared_ptr<AttributeFilter>> &);
 };
 
 struct FfiConverterSequenceTypeContract {
-    static std::vector<Contract> lift(RustBuffer);
-    static RustBuffer lower(const std::vector<Contract> &);
-    static std::vector<Contract> read(RustStream &);
-    static void write(RustStream &, const std::vector<Contract> &);
-    static uint64_t allocation_size(const std::vector<Contract> &);
+    static std::vector<std::shared_ptr<Contract>> lift(RustBuffer);
+    static RustBuffer lower(const std::vector<std::shared_ptr<Contract>> &);
+    static std::vector<std::shared_ptr<Contract>> read(RustStream &);
+    static void write(RustStream &, const std::vector<std::shared_ptr<Contract>> &);
+    static uint64_t allocation_size(const std::vector<std::shared_ptr<Contract>> &);
 };
 
 struct FfiConverterSequenceTypeController {
-    static std::vector<Controller> lift(RustBuffer);
-    static RustBuffer lower(const std::vector<Controller> &);
-    static std::vector<Controller> read(RustStream &);
-    static void write(RustStream &, const std::vector<Controller> &);
-    static uint64_t allocation_size(const std::vector<Controller> &);
+    static std::vector<std::shared_ptr<Controller>> lift(RustBuffer);
+    static RustBuffer lower(const std::vector<std::shared_ptr<Controller>> &);
+    static std::vector<std::shared_ptr<Controller>> read(RustStream &);
+    static void write(RustStream &, const std::vector<std::shared_ptr<Controller>> &);
+    static uint64_t allocation_size(const std::vector<std::shared_ptr<Controller>> &);
 };
 
 struct FfiConverterSequenceTypeEntity {
@@ -2373,19 +2458,19 @@ struct FfiConverterSequenceTypeEnumOption {
 };
 
 struct FfiConverterSequenceTypeEvent {
-    static std::vector<Event> lift(RustBuffer);
-    static RustBuffer lower(const std::vector<Event> &);
-    static std::vector<Event> read(RustStream &);
-    static void write(RustStream &, const std::vector<Event> &);
-    static uint64_t allocation_size(const std::vector<Event> &);
+    static std::vector<std::shared_ptr<Event>> lift(RustBuffer);
+    static RustBuffer lower(const std::vector<std::shared_ptr<Event>> &);
+    static std::vector<std::shared_ptr<Event>> read(RustStream &);
+    static void write(RustStream &, const std::vector<std::shared_ptr<Event>> &);
+    static uint64_t allocation_size(const std::vector<std::shared_ptr<Event>> &);
 };
 
 struct FfiConverterSequenceTypeKeysClause {
-    static std::vector<KeysClause> lift(RustBuffer);
-    static RustBuffer lower(const std::vector<KeysClause> &);
-    static std::vector<KeysClause> read(RustStream &);
-    static void write(RustStream &, const std::vector<KeysClause> &);
-    static uint64_t allocation_size(const std::vector<KeysClause> &);
+    static std::vector<std::shared_ptr<KeysClause>> lift(RustBuffer);
+    static RustBuffer lower(const std::vector<std::shared_ptr<KeysClause>> &);
+    static std::vector<std::shared_ptr<KeysClause>> read(RustStream &);
+    static void write(RustStream &, const std::vector<std::shared_ptr<KeysClause>> &);
+    static uint64_t allocation_size(const std::vector<std::shared_ptr<KeysClause>> &);
 };
 
 struct FfiConverterSequenceTypeMember {
@@ -2397,11 +2482,11 @@ struct FfiConverterSequenceTypeMember {
 };
 
 struct FfiConverterSequenceTypeMessage {
-    static std::vector<Message> lift(RustBuffer);
-    static RustBuffer lower(const std::vector<Message> &);
-    static std::vector<Message> read(RustStream &);
-    static void write(RustStream &, const std::vector<Message> &);
-    static uint64_t allocation_size(const std::vector<Message> &);
+    static std::vector<std::shared_ptr<Message>> lift(RustBuffer);
+    static RustBuffer lower(const std::vector<std::shared_ptr<Message>> &);
+    static std::vector<std::shared_ptr<Message>> read(RustStream &);
+    static void write(RustStream &, const std::vector<std::shared_ptr<Message>> &);
+    static uint64_t allocation_size(const std::vector<std::shared_ptr<Message>> &);
 };
 
 struct FfiConverterSequenceTypeModel {
@@ -2413,43 +2498,59 @@ struct FfiConverterSequenceTypeModel {
 };
 
 struct FfiConverterSequenceTypeOrderBy {
-    static std::vector<OrderBy> lift(RustBuffer);
-    static RustBuffer lower(const std::vector<OrderBy> &);
-    static std::vector<OrderBy> read(RustStream &);
-    static void write(RustStream &, const std::vector<OrderBy> &);
-    static uint64_t allocation_size(const std::vector<OrderBy> &);
+    static std::vector<std::shared_ptr<OrderBy>> lift(RustBuffer);
+    static RustBuffer lower(const std::vector<std::shared_ptr<OrderBy>> &);
+    static std::vector<std::shared_ptr<OrderBy>> read(RustStream &);
+    static void write(RustStream &, const std::vector<std::shared_ptr<OrderBy>> &);
+    static uint64_t allocation_size(const std::vector<std::shared_ptr<OrderBy>> &);
 };
 
 struct FfiConverterSequenceTypePlayerAchievementEntry {
-    static std::vector<PlayerAchievementEntry> lift(RustBuffer);
-    static RustBuffer lower(const std::vector<PlayerAchievementEntry> &);
-    static std::vector<PlayerAchievementEntry> read(RustStream &);
-    static void write(RustStream &, const std::vector<PlayerAchievementEntry> &);
-    static uint64_t allocation_size(const std::vector<PlayerAchievementEntry> &);
+    static std::vector<std::shared_ptr<PlayerAchievementEntry>> lift(RustBuffer);
+    static RustBuffer lower(const std::vector<std::shared_ptr<PlayerAchievementEntry>> &);
+    static std::vector<std::shared_ptr<PlayerAchievementEntry>> read(RustStream &);
+    static void write(RustStream &, const std::vector<std::shared_ptr<PlayerAchievementEntry>> &);
+    static uint64_t allocation_size(const std::vector<std::shared_ptr<PlayerAchievementEntry>> &);
 };
 
 struct FfiConverterSequenceTypePlayerAchievementProgress {
-    static std::vector<PlayerAchievementProgress> lift(RustBuffer);
-    static RustBuffer lower(const std::vector<PlayerAchievementProgress> &);
-    static std::vector<PlayerAchievementProgress> read(RustStream &);
-    static void write(RustStream &, const std::vector<PlayerAchievementProgress> &);
-    static uint64_t allocation_size(const std::vector<PlayerAchievementProgress> &);
+    static std::vector<std::shared_ptr<PlayerAchievementProgress>> lift(RustBuffer);
+    static RustBuffer lower(const std::vector<std::shared_ptr<PlayerAchievementProgress>> &);
+    static std::vector<std::shared_ptr<PlayerAchievementProgress>> read(RustStream &);
+    static void write(RustStream &, const std::vector<std::shared_ptr<PlayerAchievementProgress>> &);
+    static uint64_t allocation_size(const std::vector<std::shared_ptr<PlayerAchievementProgress>> &);
+};
+
+struct FfiConverterSequenceTypeSearchField {
+    static std::vector<std::shared_ptr<SearchField>> lift(RustBuffer);
+    static RustBuffer lower(const std::vector<std::shared_ptr<SearchField>> &);
+    static std::vector<std::shared_ptr<SearchField>> read(RustStream &);
+    static void write(RustStream &, const std::vector<std::shared_ptr<SearchField>> &);
+    static uint64_t allocation_size(const std::vector<std::shared_ptr<SearchField>> &);
+};
+
+struct FfiConverterSequenceTypeSearchMatch {
+    static std::vector<std::shared_ptr<SearchMatch>> lift(RustBuffer);
+    static RustBuffer lower(const std::vector<std::shared_ptr<SearchMatch>> &);
+    static std::vector<std::shared_ptr<SearchMatch>> read(RustStream &);
+    static void write(RustStream &, const std::vector<std::shared_ptr<SearchMatch>> &);
+    static uint64_t allocation_size(const std::vector<std::shared_ptr<SearchMatch>> &);
 };
 
 struct FfiConverterSequenceTypeSqlField {
-    static std::vector<SqlField> lift(RustBuffer);
-    static RustBuffer lower(const std::vector<SqlField> &);
-    static std::vector<SqlField> read(RustStream &);
-    static void write(RustStream &, const std::vector<SqlField> &);
-    static uint64_t allocation_size(const std::vector<SqlField> &);
+    static std::vector<std::shared_ptr<SqlField>> lift(RustBuffer);
+    static RustBuffer lower(const std::vector<std::shared_ptr<SqlField>> &);
+    static std::vector<std::shared_ptr<SqlField>> read(RustStream &);
+    static void write(RustStream &, const std::vector<std::shared_ptr<SqlField>> &);
+    static uint64_t allocation_size(const std::vector<std::shared_ptr<SqlField>> &);
 };
 
 struct FfiConverterSequenceTypeSqlRow {
-    static std::vector<SqlRow> lift(RustBuffer);
-    static RustBuffer lower(const std::vector<SqlRow> &);
-    static std::vector<SqlRow> read(RustStream &);
-    static void write(RustStream &, const std::vector<SqlRow> &);
-    static uint64_t allocation_size(const std::vector<SqlRow> &);
+    static std::vector<std::shared_ptr<SqlRow>> lift(RustBuffer);
+    static RustBuffer lower(const std::vector<std::shared_ptr<SqlRow>> &);
+    static std::vector<std::shared_ptr<SqlRow>> read(RustStream &);
+    static void write(RustStream &, const std::vector<std::shared_ptr<SqlRow>> &);
+    static uint64_t allocation_size(const std::vector<std::shared_ptr<SqlRow>> &);
 };
 
 struct FfiConverterSequenceTypeStruct {
@@ -2460,60 +2561,68 @@ struct FfiConverterSequenceTypeStruct {
     static uint64_t allocation_size(const std::vector<std::shared_ptr<Struct>> &);
 };
 
+struct FfiConverterSequenceTypeTableSearchResults {
+    static std::vector<std::shared_ptr<TableSearchResults>> lift(RustBuffer);
+    static RustBuffer lower(const std::vector<std::shared_ptr<TableSearchResults>> &);
+    static std::vector<std::shared_ptr<TableSearchResults>> read(RustStream &);
+    static void write(RustStream &, const std::vector<std::shared_ptr<TableSearchResults>> &);
+    static uint64_t allocation_size(const std::vector<std::shared_ptr<TableSearchResults>> &);
+};
+
 struct FfiConverterSequenceTypeTaskProgress {
-    static std::vector<TaskProgress> lift(RustBuffer);
-    static RustBuffer lower(const std::vector<TaskProgress> &);
-    static std::vector<TaskProgress> read(RustStream &);
-    static void write(RustStream &, const std::vector<TaskProgress> &);
-    static uint64_t allocation_size(const std::vector<TaskProgress> &);
+    static std::vector<std::shared_ptr<TaskProgress>> lift(RustBuffer);
+    static RustBuffer lower(const std::vector<std::shared_ptr<TaskProgress>> &);
+    static std::vector<std::shared_ptr<TaskProgress>> read(RustStream &);
+    static void write(RustStream &, const std::vector<std::shared_ptr<TaskProgress>> &);
+    static uint64_t allocation_size(const std::vector<std::shared_ptr<TaskProgress>> &);
 };
 
 struct FfiConverterSequenceTypeToken {
-    static std::vector<Token> lift(RustBuffer);
-    static RustBuffer lower(const std::vector<Token> &);
-    static std::vector<Token> read(RustStream &);
-    static void write(RustStream &, const std::vector<Token> &);
-    static uint64_t allocation_size(const std::vector<Token> &);
+    static std::vector<std::shared_ptr<Token>> lift(RustBuffer);
+    static RustBuffer lower(const std::vector<std::shared_ptr<Token>> &);
+    static std::vector<std::shared_ptr<Token>> read(RustStream &);
+    static void write(RustStream &, const std::vector<std::shared_ptr<Token>> &);
+    static uint64_t allocation_size(const std::vector<std::shared_ptr<Token>> &);
 };
 
 struct FfiConverterSequenceTypeTokenBalance {
-    static std::vector<TokenBalance> lift(RustBuffer);
-    static RustBuffer lower(const std::vector<TokenBalance> &);
-    static std::vector<TokenBalance> read(RustStream &);
-    static void write(RustStream &, const std::vector<TokenBalance> &);
-    static uint64_t allocation_size(const std::vector<TokenBalance> &);
+    static std::vector<std::shared_ptr<TokenBalance>> lift(RustBuffer);
+    static RustBuffer lower(const std::vector<std::shared_ptr<TokenBalance>> &);
+    static std::vector<std::shared_ptr<TokenBalance>> read(RustStream &);
+    static void write(RustStream &, const std::vector<std::shared_ptr<TokenBalance>> &);
+    static uint64_t allocation_size(const std::vector<std::shared_ptr<TokenBalance>> &);
 };
 
 struct FfiConverterSequenceTypeTokenContract {
-    static std::vector<TokenContract> lift(RustBuffer);
-    static RustBuffer lower(const std::vector<TokenContract> &);
-    static std::vector<TokenContract> read(RustStream &);
-    static void write(RustStream &, const std::vector<TokenContract> &);
-    static uint64_t allocation_size(const std::vector<TokenContract> &);
+    static std::vector<std::shared_ptr<TokenContract>> lift(RustBuffer);
+    static RustBuffer lower(const std::vector<std::shared_ptr<TokenContract>> &);
+    static std::vector<std::shared_ptr<TokenContract>> read(RustStream &);
+    static void write(RustStream &, const std::vector<std::shared_ptr<TokenContract>> &);
+    static uint64_t allocation_size(const std::vector<std::shared_ptr<TokenContract>> &);
 };
 
 struct FfiConverterSequenceTypeTokenTransfer {
-    static std::vector<TokenTransfer> lift(RustBuffer);
-    static RustBuffer lower(const std::vector<TokenTransfer> &);
-    static std::vector<TokenTransfer> read(RustStream &);
-    static void write(RustStream &, const std::vector<TokenTransfer> &);
-    static uint64_t allocation_size(const std::vector<TokenTransfer> &);
+    static std::vector<std::shared_ptr<TokenTransfer>> lift(RustBuffer);
+    static RustBuffer lower(const std::vector<std::shared_ptr<TokenTransfer>> &);
+    static std::vector<std::shared_ptr<TokenTransfer>> read(RustStream &);
+    static void write(RustStream &, const std::vector<std::shared_ptr<TokenTransfer>> &);
+    static uint64_t allocation_size(const std::vector<std::shared_ptr<TokenTransfer>> &);
 };
 
 struct FfiConverterSequenceTypeTransaction {
-    static std::vector<Transaction> lift(RustBuffer);
-    static RustBuffer lower(const std::vector<Transaction> &);
-    static std::vector<Transaction> read(RustStream &);
-    static void write(RustStream &, const std::vector<Transaction> &);
-    static uint64_t allocation_size(const std::vector<Transaction> &);
+    static std::vector<std::shared_ptr<Transaction>> lift(RustBuffer);
+    static RustBuffer lower(const std::vector<std::shared_ptr<Transaction>> &);
+    static std::vector<std::shared_ptr<Transaction>> read(RustStream &);
+    static void write(RustStream &, const std::vector<std::shared_ptr<Transaction>> &);
+    static uint64_t allocation_size(const std::vector<std::shared_ptr<Transaction>> &);
 };
 
 struct FfiConverterSequenceTypeTransactionCall {
-    static std::vector<TransactionCall> lift(RustBuffer);
-    static RustBuffer lower(const std::vector<TransactionCall> &);
-    static std::vector<TransactionCall> read(RustStream &);
-    static void write(RustStream &, const std::vector<TransactionCall> &);
-    static uint64_t allocation_size(const std::vector<TransactionCall> &);
+    static std::vector<std::shared_ptr<TransactionCall>> lift(RustBuffer);
+    static RustBuffer lower(const std::vector<std::shared_ptr<TransactionCall>> &);
+    static std::vector<std::shared_ptr<TransactionCall>> read(RustStream &);
+    static void write(RustStream &, const std::vector<std::shared_ptr<TransactionCall>> &);
+    static uint64_t allocation_size(const std::vector<std::shared_ptr<TransactionCall>> &);
 };
 
 struct FfiConverterSequenceTypeWorld {

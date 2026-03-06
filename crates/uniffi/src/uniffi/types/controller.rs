@@ -2,6 +2,7 @@
 use super::core::*;
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct Controller {
     pub address: FieldElement,
     pub username: String,
@@ -19,6 +20,7 @@ impl From<torii_proto::Controller> for Controller {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct ControllerQuery {
     pub pagination: Pagination,
     pub contract_addresses: Vec<FieldElement>,

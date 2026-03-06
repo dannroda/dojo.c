@@ -3,6 +3,7 @@ use super::core::*;
 use super::query::*;
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct Event {
     pub keys: Vec<FieldElement>,
     pub data: Vec<FieldElement>,
@@ -10,6 +11,7 @@ pub struct Event {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct EventQuery {
     pub keys: Option<KeysClause>,
     pub pagination: Pagination,
@@ -36,6 +38,7 @@ impl From<torii_proto::Event> for Event {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct Message {
     pub message: String,
     pub signature: Vec<FieldElement>,

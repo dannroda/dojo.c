@@ -1,3 +1,4 @@
+cargo-features = ["panic-immediate-abort"]
 [workspace]
 resolver = "2"
 members = [
@@ -52,6 +53,7 @@ web-sys = { version = "0.3.77", features = [
   'Worker',
   'WorkerGlobalScope',
   'console',
+    "Headers"
 ] }
 tsify-next = { version = "0.5.4", features = ["js"] }
 instant = { version = "0.1.13", features = ["wasm-bindgen"] }
@@ -71,3 +73,9 @@ dojo-uniffi = { path = "crates/uniffi" }
 crunchy = { git = "https://github.com/nmathewson/crunchy", branch = "cross-compilation-fix" }
 starknet-crypto = { git = "https://github.com/glihm/starknet-rs", rev = "c1e7e19f45f9fad6ea2796da9b7b3dcf8f9f2b82" }
 uniffi_core = { git = "https://github.com/dannroda/uniffi-rs", rev = "3ac537537ee0f439fca1294207d159bef2973c0d" }
+
+[profile.release]
+panic = "immediate-abort"
+
+[profile.dev]
+panic = "immediate-abort"

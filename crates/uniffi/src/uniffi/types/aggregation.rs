@@ -2,6 +2,7 @@
 use super::core::*;
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct AggregationQuery {
     pub aggregator_ids: Vec<String>,
     pub entity_ids: Vec<String>,
@@ -19,6 +20,7 @@ impl From<AggregationQuery> for torii_proto::AggregationQuery {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct AggregationEntry {
     pub id: String,
     pub aggregator_id: String,

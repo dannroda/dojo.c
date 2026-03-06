@@ -70,6 +70,7 @@ RustBuffer uniffi_dojo_uniffi_fn_method_toriiclient_event_messages(void * ptr, R
 RustBuffer uniffi_dojo_uniffi_fn_method_toriiclient_player_achievements(void * ptr, RustBuffer query, RustCallStatus *out_status);
 RustBuffer uniffi_dojo_uniffi_fn_method_toriiclient_publish_message(void * ptr, RustBuffer message, RustCallStatus *out_status);
 RustBuffer uniffi_dojo_uniffi_fn_method_toriiclient_publish_message_batch(void * ptr, RustBuffer messages, RustCallStatus *out_status);
+RustBuffer uniffi_dojo_uniffi_fn_method_toriiclient_search(void * ptr, RustBuffer query, RustCallStatus *out_status);
 RustBuffer uniffi_dojo_uniffi_fn_method_toriiclient_sql(void * ptr, RustBuffer query, RustCallStatus *out_status);
 RustBuffer uniffi_dojo_uniffi_fn_method_toriiclient_starknet_events(void * ptr, RustBuffer query, RustCallStatus *out_status);
 uint64_t uniffi_dojo_uniffi_fn_method_toriiclient_subscribe_entity_updates(void * ptr, RustBuffer clause, RustBuffer world_addresses, uint64_t callback, RustCallStatus *out_status);
@@ -103,6 +104,7 @@ uint16_t uniffi_dojo_uniffi_checksum_method_toriiclient_event_messages();
 uint16_t uniffi_dojo_uniffi_checksum_method_toriiclient_player_achievements();
 uint16_t uniffi_dojo_uniffi_checksum_method_toriiclient_publish_message();
 uint16_t uniffi_dojo_uniffi_checksum_method_toriiclient_publish_message_batch();
+uint16_t uniffi_dojo_uniffi_checksum_method_toriiclient_search();
 uint16_t uniffi_dojo_uniffi_checksum_method_toriiclient_sql();
 uint16_t uniffi_dojo_uniffi_checksum_method_toriiclient_starknet_events();
 uint16_t uniffi_dojo_uniffi_checksum_method_toriiclient_subscribe_entity_updates();

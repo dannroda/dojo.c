@@ -5,6 +5,7 @@ use super::core::*;
 use super::schema::{Struct, Ty};
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct Entity {
     pub world_address: FieldElement,
     pub hashed_keys: FieldElement,
@@ -41,6 +42,7 @@ impl From<torii_proto::schema::Entity> for Entity {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct Model {
     pub world_address: FieldElement,
     pub schema: Ty,
@@ -96,6 +98,7 @@ impl From<Model> for torii_proto::Model {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct World {
     pub world_address: FieldElement,
     pub models: Vec<Model>,

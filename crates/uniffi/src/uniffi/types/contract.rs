@@ -2,6 +2,7 @@
 use super::core::*;
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub enum ContractType {
     WORLD,
     ERC20,
@@ -38,6 +39,7 @@ impl From<ContractType> for torii_proto::ContractType {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct Contract {
     pub contract_address: FieldElement,
     pub contract_type: ContractType,
@@ -65,6 +67,7 @@ impl From<torii_proto::Contract> for Contract {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct ContractQuery {
     pub contract_addresses: Vec<FieldElement>,
     pub contract_types: Vec<ContractType>,

@@ -4,17 +4,20 @@ use super::schema::MemberValue;
 
 // SQL query result types
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct SqlField {
     pub name: String,
     pub value: SqlValue,
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct SqlRow {
     pub fields: Vec<SqlField>,
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub enum SqlValue {
     Text { value: String },
     Integer { value: i64 },
@@ -46,6 +49,7 @@ impl TryInto<SqlRow> for torii_proto::SqlRow {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub enum PatternMatching {
     FixedLen,
     VariableLen,
@@ -70,6 +74,7 @@ impl From<torii_proto::PatternMatching> for PatternMatching {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct KeysClause {
     pub keys: Vec<Option<FieldElement>>,
     pub pattern_matching: PatternMatching,
@@ -101,6 +106,7 @@ impl From<torii_proto::KeysClause> for KeysClause {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub enum LogicalOperator {
     And,
     Or,
@@ -125,6 +131,7 @@ impl From<torii_proto::LogicalOperator> for LogicalOperator {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub enum ComparisonOperator {
     Eq,
     Neq,
@@ -185,6 +192,7 @@ impl From<torii_proto::ComparisonOperator> for ComparisonOperator {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct MemberClause {
     pub model: String,
     pub member: String,
@@ -215,6 +223,7 @@ impl From<torii_proto::MemberClause> for MemberClause {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct CompositeClause {
     pub operator: LogicalOperator,
     pub clauses: Vec<Clause>,
@@ -239,6 +248,8 @@ impl From<torii_proto::CompositeClause> for CompositeClause {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(target_arch = "wasm32", serde(tag = "type", content = "clause"))]
 pub enum Clause {
     HashedKeys { keys: Vec<FieldElement> },
     Keys { clause: KeysClause },
@@ -273,12 +284,18 @@ impl From<torii_proto::Clause> for Clause {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct Query {
+    #[cfg_attr(target_arch = "wasm32", serde(default))]
     pub world_addresses: Vec<FieldElement>,
     pub pagination: Pagination,
+    #[cfg_attr(target_arch = "wasm32", serde(default))]
     pub clause: Option<Clause>,
+    #[cfg_attr(target_arch = "wasm32", serde(default))]
     pub no_hashed_keys: bool,
+    #[cfg_attr(target_arch = "wasm32", serde(default))]
     pub models: Vec<String>,
+    #[cfg_attr(target_arch = "wasm32", serde(default))]
     pub historical: bool,
 }
 

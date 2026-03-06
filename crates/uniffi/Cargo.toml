@@ -34,6 +34,19 @@ chrono.workspace = true
 num-bigint.workspace = true
 num-traits.workspace = true
 
+# WASM-specific dependencies
+wasm-bindgen.workspace = true
+serde-wasm-bindgen.workspace = true
+wasm-bindgen-futures.workspace = true
+js-sys.workspace = true
+web-sys.workspace = true
+tsify-next.workspace = true
+instant.workspace = true
+gloo-timers.workspace = true
+gloo-utils.workspace = true
+console_error_panic_hook.workspace = true
+
+
 # UniFFI
 uniffi = { version = "0.30", features = ["bindgen", "cli"] }
 uniffi_bindgen = "0.30"
@@ -102,3 +115,4 @@ tower-http = { version = "0.6.2", features = ["cors"] }
 tokio = { version = "1.39.2", default-features = false, features = ["sync", "macros", "rt", "time"]}
 uuid = { version = "0.8.2", features = ["stdweb","wasm-bindgen","v4"] }
 chrono = { workspace = true, features = ["wasmbind"] }
+js-sys = { workspace = true }

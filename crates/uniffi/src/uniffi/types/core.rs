@@ -4,14 +4,20 @@
 // These will be represented as strings in the UDL via [Custom] attribute
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(target_arch = "wasm32", serde(transparent))]
 pub struct FieldElement(pub String);
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(target_arch = "wasm32", serde(transparent))]
 pub struct U256(pub String);
 
 // Custom type implementations for UniFFI
 // These newtype wrappers will be represented as their inner type (String) in foreign languages
+#[cfg(not(target_arch = "wasm32"))]
 uniffi::custom_newtype!(FieldElement, String);
+#[cfg(not(target_arch = "wasm32"))]
 uniffi::custom_newtype!(U256, String);
 
 // Helper functions to convert between internal types and UniFFI types
@@ -35,6 +41,7 @@ pub fn uniffi_to_u256(u: &U256) -> Result<crypto_bigint::U256, DojoError> {
 
 // Error types
 #[derive(Debug, thiserror::Error)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub enum DojoError {
     #[error("Client error: {message}")]
     ClientError { message: String },
@@ -54,6 +61,13 @@ pub enum DojoError {
     SubscriptionError,
 }
 
+#[cfg(target_arch = "wasm32")]
+impl From<DojoError> for wasm_bindgen::JsValue {
+    fn from(error: DojoError) -> Self {
+        wasm_bindgen::JsValue::from_str(&error.to_string())
+    }
+}
+
 impl From<anyhow::Error> for DojoError {
     fn from(e: anyhow::Error) -> Self {
         DojoError::ClientError { message: e.to_string() }
@@ -62,6 +76,7 @@ impl From<anyhow::Error> for DojoError {
 
 // Pagination
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub enum PaginationDirection {
     Forward,
     Backward,
@@ -86,6 +101,7 @@ impl From<torii_proto::PaginationDirection> for PaginationDirection {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub enum OrderDirection {
     Asc,
     Desc,
@@ -110,6 +126,7 @@ impl From<torii_proto::OrderDirection> for OrderDirection {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct OrderBy {
     pub field: String,
     pub direction: OrderDirection,
@@ -128,10 +145,14 @@ impl From<torii_proto::OrderBy> for OrderBy {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct Pagination {
+    #[cfg_attr(target_arch = "wasm32", serde(default))]
     pub cursor: Option<String>,
+    #[cfg_attr(target_arch = "wasm32", serde(default))]
     pub limit: Option<u32>,
     pub direction: PaginationDirection,
+    #[cfg_attr(target_arch = "wasm32", serde(default))]
     pub order_by: Vec<OrderBy>,
 }
 
@@ -163,6 +184,7 @@ impl From<torii_proto::Pagination> for Pagination {
 
 // Signature
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct Signature {
     pub r: FieldElement,
     pub s: FieldElement,
@@ -185,6 +207,7 @@ impl From<starknet::core::crypto::Signature> for Signature {
 
 // Call
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct Call {
     pub to: FieldElement,
     pub selector: String,
@@ -222,6 +245,7 @@ impl From<Call> for starknet::core::types::FunctionCall {
 
 // BlockId and BlockTag
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub enum BlockTag {
     Latest,
     PreConfirmed,
@@ -237,6 +261,7 @@ impl From<BlockTag> for starknet::core::types::BlockTag {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub enum BlockId {
     Hash(FieldElement),
     Number(u64),
@@ -268,72 +293,84 @@ use super::token::{Token, TokenBalance, TokenContract, TokenTransfer};
 use super::transaction::Transaction;
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct PageController {
     pub items: Vec<Controller>,
     pub next_cursor: Option<String>,
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct PageToken {
     pub items: Vec<Token>,
     pub next_cursor: Option<String>,
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct PageTokenBalance {
     pub items: Vec<TokenBalance>,
     pub next_cursor: Option<String>,
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct PageTokenContract {
     pub items: Vec<TokenContract>,
     pub next_cursor: Option<String>,
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct PageTokenTransfer {
     pub items: Vec<TokenTransfer>,
     pub next_cursor: Option<String>,
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct PageTransaction {
     pub items: Vec<Transaction>,
     pub next_cursor: Option<String>,
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct PageAggregationEntry {
     pub items: Vec<AggregationEntry>,
     pub next_cursor: Option<String>,
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct PageActivity {
     pub items: Vec<Activity>,
     pub next_cursor: Option<String>,
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct PageAchievement {
     pub items: Vec<Achievement>,
     pub next_cursor: Option<String>,
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct PagePlayerAchievement {
     pub items: Vec<PlayerAchievementEntry>,
     pub next_cursor: Option<String>,
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct PageEntity {
     pub items: Vec<Entity>,
     pub next_cursor: Option<String>,
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct PageEvent {
     pub items: Vec<Event>,
     pub next_cursor: Option<String>,

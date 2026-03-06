@@ -2,6 +2,7 @@
 use super::core::*;
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct Token {
     pub contract_address: FieldElement,
     pub token_id: Option<U256>,
@@ -27,6 +28,7 @@ impl From<torii_proto::Token> for Token {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct TokenBalance {
     pub balance: U256,
     pub account_address: FieldElement,
@@ -46,6 +48,7 @@ impl From<torii_proto::TokenBalance> for TokenBalance {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct TokenContract {
     pub contract_address: FieldElement,
     pub name: String,
@@ -71,6 +74,7 @@ impl From<torii_proto::TokenContract> for TokenContract {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct AttributeFilter {
     pub trait_name: String,
     pub trait_value: String,
@@ -86,6 +90,7 @@ impl From<AttributeFilter> for torii_proto::TokenAttributeFilter {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct TokenQuery {
     pub contract_addresses: Vec<FieldElement>,
     pub token_ids: Vec<U256>,
@@ -109,6 +114,7 @@ impl From<TokenQuery> for torii_proto::TokenQuery {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct TokenBalanceQuery {
     pub contract_addresses: Vec<FieldElement>,
     pub account_addresses: Vec<FieldElement>,
@@ -136,6 +142,7 @@ impl From<TokenBalanceQuery> for torii_proto::TokenBalanceQuery {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct TokenContractQuery {
     pub contract_addresses: Vec<FieldElement>,
     pub contract_types: Vec<super::contract::ContractType>,
@@ -157,6 +164,7 @@ impl From<TokenContractQuery> for torii_proto::TokenContractQuery {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct TokenTransfer {
     pub id: String,
     pub contract_address: FieldElement,
@@ -184,6 +192,7 @@ impl From<torii_proto::TokenTransfer> for TokenTransfer {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub struct TokenTransferQuery {
     pub contract_addresses: Vec<FieldElement>,
     pub account_addresses: Vec<FieldElement>,
